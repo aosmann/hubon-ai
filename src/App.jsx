@@ -6,7 +6,7 @@ import TemplatesView from './components/TemplatesView.jsx';
 import BrandView from './components/BrandView.jsx';
 import GenerateView from './components/GenerateView.jsx';
 import AuthView from './components/AuthView.jsx';
-import { supabase } from './supabaseClient.js';
+import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 import './App.css';
 
 const adminEmailEnv = (import.meta.env.VITE_ADMIN_EMAILS || '')
@@ -199,6 +199,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [generateError, setGenerateError] = useState('');
   const [globalMessage, setGlobalMessage] = useState('');
+  const [configError, setConfigError] = useState('');
 
   const selectedTemplate = useMemo(
     () => templates.find(template => template.id === selectedTemplateId) || null,
@@ -215,10 +216,10 @@ export default function App() {
       prompt: template.prompt ?? '',
       fields: Array.isArray(template.fields) ? template.fields : []
     };
-  }, []);
+  }, [supabase]);
 
   const fetchTemplates = useCallback(async () => {
-    if (!user) return;
+    if (!user || !supabase) return;
     setTemplatesLoading(true);
     setTemplatesError('');
     const { data, error } = await supabase
@@ -233,10 +234,10 @@ export default function App() {
       setTemplates((data ?? []).map(entry => normaliseTemplate(entry)).filter(Boolean));
     }
     setTemplatesLoading(false);
-  }, [normaliseTemplate, user]);
+  }, [normaliseTemplate, supabase, user]);
 
   const fetchBrandStyle = useCallback(async () => {
-    if (!user) return;
+    if (!user || !supabase) return;
     setBrandLoading(true);
     setBrandError('');
     const { data, error } = await supabase
@@ -251,10 +252,10 @@ export default function App() {
     const payload = data?.data && typeof data.data === 'object' ? data.data : emptyBrandStyle;
     setBrandStyle({ ...emptyBrandStyle, ...payload });
     setBrandLoading(false);
-  }, [user]);
+  }, [supabase, user]);
 
   const fetchHistory = useCallback(async () => {
-    if (!user) return;
+    if (!user || !supabase) return;
     setHistoryLoading(true);
     setHistoryError('');
     const { data, error } = await supabase
@@ -281,10 +282,10 @@ export default function App() {
       );
     }
     setHistoryLoading(false);
-  }, [user]);
+  }, [supabase, user]);
 
   const fetchProfile = useCallback(async () => {
-    if (!user) return;
+    if (!user || !supabase) return;
     setProfileLoading(true);
     const { data, error } = await supabase
       .from('profiles')
@@ -310,7 +311,7 @@ export default function App() {
       setProfile(data);
     }
     setProfileLoading(false);
-  }, [user]);
+  }, [supabase, user]);
 
   const isAdmin = useMemo(() => {
     if (profile?.is_admin) return true;
@@ -326,6 +327,12 @@ export default function App() {
   }, [globalMessage]);
 
   useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      setConfigError('Supabase configuration missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+      setAuthInitialized(true);
+      return;
+    }
+
     let isMounted = true;
 
     async function initialiseAuth() {
@@ -352,6 +359,7 @@ export default function App() {
 
   useEffect(() => {
     if (!authInitialized) return;
+    if (!isSupabaseConfigured || !supabase) return;
     if (!user) {
       setTemplates([]);
       setTemplatesError('');
@@ -506,7 +514,7 @@ export default function App() {
   }
 
   async function handleBrandStyleSubmit() {
-    if (!user) return;
+    if (!user || !supabase) return;
     setBrandSaving(true);
     setBrandError('');
     const payload = {
@@ -669,7 +677,7 @@ export default function App() {
   }
 
   async function handleCreateTemplate() {
-    if (!isAdmin || !user) return;
+    if (!isAdmin || !user || !supabase) return;
     setTemplatesError('');
     const payload = {
       name: 'New Template',
@@ -705,7 +713,7 @@ export default function App() {
   }
 
   async function handleDeleteTemplate(templateId) {
-    if (!isAdmin || !user) return;
+    if (!isAdmin || !user || !supabase) return;
     setTemplatesError('');
     const { error } = await supabase.from('templates').delete().eq('id', templateId);
     if (error) {
@@ -755,7 +763,7 @@ export default function App() {
 
   async function handleSaveTemplateEdit(templateId) {
     const draft = editingTemplates[templateId];
-    if (!draft || !isAdmin) return;
+    if (!draft || !isAdmin || !supabase) return;
     setTemplatesError('');
     const payload = {
       name: draft.name,
@@ -822,6 +830,7 @@ export default function App() {
         createdAt,
         formValues: formValuesSnapshot
       };
+    if (supabase) {
       const { error: insertError } = await supabase.from('image_history').insert({
         id: entryId,
         user_id: user.id,
@@ -835,6 +844,7 @@ export default function App() {
       if (insertError) {
         console.error('Failed to persist history', insertError);
       }
+    }
       setHistory(prev => {
         const base = Array.isArray(prev) ? prev : [];
         const next = [historyEntry, ...base];
@@ -864,7 +874,15 @@ export default function App() {
   let viewClassName = '';
   let viewContent = null;
 
-  if (!user) {
+  if (configError) {
+    viewClassName = 'auth-view';
+    viewContent = (
+      <div className="config-error">
+        <h1>Configuration required</h1>
+        <p className="muted">Supabase environment variables are missing. Set them and redeploy.</p>
+      </div>
+    );
+  } else if (!user) {
     viewClassName = 'auth-view';
     viewContent = (
       <AuthView
@@ -944,19 +962,22 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <HeaderNav
-        activeView={activeView}
-        isAdminMode={isAdminMode}
-        canEditTemplates={isAdmin && !profileLoading}
-        user={user}
-        onHome={goHome}
-        onTemplates={resetToTemplates}
-        onBrand={showBrandView}
-        onToggleAdmin={toggleAdminMode}
-        onLogout={handleLogout}
-      />
+      {configError ? null : (
+        <HeaderNav
+          activeView={activeView}
+          isAdminMode={isAdminMode}
+          canEditTemplates={isAdmin && !profileLoading}
+          user={user}
+          onHome={goHome}
+          onTemplates={resetToTemplates}
+          onBrand={showBrandView}
+          onToggleAdmin={toggleAdminMode}
+          onLogout={handleLogout}
+        />
+      )}
       <main className="page-area">
         {globalMessage && <div className="app-banner success">{globalMessage}</div>}
+        {configError && <div className="app-banner error">{configError}</div>}
         {viewContent && <ViewLayout className={viewClassName}>{viewContent}</ViewLayout>}
       </main>
     </div>

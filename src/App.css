@@ -243,6 +243,12 @@ button.danger:hover {
   gap: 12px;
 }
 
+.config-error {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .user-pill {
   display: flex;
   align-items: center;
