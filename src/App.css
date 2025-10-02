@@ -319,18 +319,17 @@ button.danger:hover {
 
 .template-card {
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sm);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-card);
+
 }
 
 .template-image {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   aspect-ratio: 16 / 10;
-  background-size: cover;
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
   background-color: #f1f5f9;
@@ -344,7 +343,7 @@ button.danger:hover {
 }
 
 .template-heading h2 {
-  margin: 0 0 8px;
+  margin: 0 0 4px;
   font-size: 1.2rem;
   color: var(--color-text);
 }
@@ -352,7 +351,7 @@ button.danger:hover {
 .template-heading p {
   margin: 0;
   color: var(--color-muted);
-  line-height: 1.5;
+  line-height: 1;
 }
 
 .template-actions {
