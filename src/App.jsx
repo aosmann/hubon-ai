@@ -13,6 +13,7 @@ const adminEmailEnv = (import.meta.env.VITE_ADMIN_EMAILS || '')
   .split(',')
   .map(entry => entry.trim().toLowerCase())
   .filter(Boolean);
+const imageBucketName = import.meta.env.VITE_SUPABASE_IMAGE_BUCKET || 'generated-images';
 
 const defaultTemplates = [
   {
@@ -167,6 +168,16 @@ function ViewLayout({ className = '', children }) {
   return <section className={classes.join(' ')}>{children}</section>;
 }
 
+function base64ToBlob(base64, contentType = 'image/png') {
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i += 1) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: contentType });
+}
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [authInitialized, setAuthInitialized] = useState(false);
@@ -273,6 +284,7 @@ export default function App() {
         (data ?? []).map(entry => ({
           id: entry.id,
           url: entry.image_url,
+          previewUrl: entry.image_preview || entry.image_url,
           prompt: entry.prompt,
           templateId: entry.template_id,
           templateName: entry.template_name,
@@ -500,7 +512,7 @@ export default function App() {
     setSelectedTemplateId(entry.templateId);
     setTemplateFormValues(entry.formValues ?? {});
     setActiveView('generate');
-    setImageResult(entry);
+    setImageResult({ ...entry, url: entry.previewUrl || entry.url });
     setGenerateError('');
     setLoading(false);
   }
@@ -801,46 +813,74 @@ export default function App() {
     setImageResult(null);
     try {
       const response = await generateImage({ prompt: promptPreview });
-      const url = response?.data?.[0]?.url || response?.url || null;
-      if (!url) {
+      const base64Image = response?.data?.[0]?.b64_json || null;
+      if (!base64Image) {
         throw new Error('No image returned from the API.');
       }
+      const dataUrl = `data:image/png;base64,${base64Image}`;
       const formValuesSnapshot = selectedTemplate.fields.reduce((acc, field) => {
         acc[field.key] = templateFormValues[field.key] ?? '';
         return acc;
       }, {});
       const entryId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `history_${Date.now()}`;
       const createdAt = new Date().toISOString();
+      let storedImageUrl = dataUrl;
+
+      if (supabase && imageBucketName) {
+        try {
+          const blob = base64ToBlob(base64Image);
+          const filePath = `${user.id}/${entryId}.png`;
+          const { error: uploadError } = await supabase.storage
+            .from(imageBucketName)
+            .upload(filePath, blob, {
+              cacheControl: '3600',
+              contentType: 'image/png',
+              upsert: true
+            });
+          if (uploadError) {
+            console.error('Failed to upload image to Supabase storage', uploadError);
+          } else {
+            const { data: publicUrlData } = supabase.storage.from(imageBucketName).getPublicUrl(filePath);
+            if (publicUrlData?.publicUrl) {
+              storedImageUrl = publicUrlData.publicUrl;
+            }
+          }
+        } catch (uploadErr) {
+          console.error('Unexpected error uploading image to Supabase storage', uploadErr);
+        }
+      }
+
       const historyEntry = {
         id: entryId,
-        url,
+        url: storedImageUrl,
+        previewUrl: dataUrl,
         prompt: promptPreview,
         templateId: selectedTemplate.id,
         templateName: selectedTemplate.name,
         createdAt,
         formValues: formValuesSnapshot
       };
-    if (supabase) {
-      const { error: insertError } = await supabase.from('image_history').insert({
-        id: entryId,
-        user_id: user.id,
-        template_id: selectedTemplate.id,
-        template_name: selectedTemplate.name,
-        prompt: promptPreview,
-        form_values: formValuesSnapshot,
-        image_url: url,
-        created_at: createdAt
-      });
-      if (insertError) {
-        console.error('Failed to persist history', insertError);
+      if (supabase) {
+        const { error: insertError } = await supabase.from('image_history').insert({
+          id: entryId,
+          user_id: user.id,
+          template_id: selectedTemplate.id,
+          template_name: selectedTemplate.name,
+          prompt: promptPreview,
+          form_values: formValuesSnapshot,
+          image_url: storedImageUrl,
+          created_at: createdAt
+        });
+        if (insertError) {
+          console.error('Failed to persist history', insertError);
+        }
       }
-    }
       setHistory(prev => {
         const base = Array.isArray(prev) ? prev : [];
         const next = [historyEntry, ...base];
         return next.slice(0, 30);
       });
-      setImageResult(historyEntry);
+      setImageResult({ ...historyEntry, url: dataUrl, storedUrl: storedImageUrl });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to generate image.';
       setGenerateError(message);

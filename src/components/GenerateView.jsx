@@ -90,7 +90,10 @@ export default function GenerateView({
             <div className="preview-section">
               <h3>Latest render</h3>
               <div className="image-preview">
-                <button type="button" onClick={() => onOpenImage(imageResult.url)}>
+                <button
+                  type="button"
+                  onClick={() => onOpenImage(imageResult.storedUrl || imageResult.url)}
+                >
                   <img src={imageResult.url} alt="Generated visual" />
                 </button>
                 <span className="muted">Tap to open full resolution</span>

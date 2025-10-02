@@ -139,3 +139,26 @@ create policy "Image history delete by owner"
   on public.image_history
   for delete
   using (auth.uid() = user_id);
+
+-- Generated image storage bucket (create once, requires service role)
+insert into storage.buckets (id, name, public)
+values ('generated-images', 'generated-images', true)
+on conflict (id) do nothing;
+
+-- Allow anyone to read generated images
+create policy "Public read generated images"
+  on storage.objects
+  for select
+  using (bucket_id = 'generated-images');
+
+-- Allow authenticated users to upload images they generate
+create policy "Authenticated upload generated images"
+  on storage.objects
+  for insert
+  with check (bucket_id = 'generated-images' and auth.role() = 'authenticated');
+
+-- Allow owners to delete their generated images
+create policy "Owner delete generated images"
+  on storage.objects
+  for delete
+  using (bucket_id = 'generated-images' and auth.uid() = owner);

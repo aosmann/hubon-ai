@@ -7,6 +7,7 @@ export default function HomeView({
   isLoading,
   error
 }) {
+  const resolveImageSrc = entry => entry.previewUrl || entry.url || '';
   return (
     <>
       <div className="page-header">
@@ -36,7 +37,7 @@ export default function HomeView({
               <article key={entry.id} className="history-card">
                 <div className="history-thumb">
                   <img
-                    src={entry.url}
+                    src={resolveImageSrc(entry)}
                     alt={entry.templateName ? `${entry.templateName} render` : 'Generated render'}
                   />
                 </div>
@@ -54,7 +55,7 @@ export default function HomeView({
                         Reuse template
                       </button>
                     )}
-                    <button type="button" className="secondary" onClick={() => onOpenImage(entry.url)}>
+                    <button type="button" className="secondary" onClick={() => onOpenImage(resolveImageSrc(entry))}>
                       Open image
                     </button>
                   </div>

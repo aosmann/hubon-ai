@@ -12,7 +12,7 @@ export async function generateImage({ prompt }) {
     prompt,
     n: 1,
     size: '1024x1024',
-    response_format: 'url'
+    response_format: 'b64_json'
   };
 
   const response = await fetch('https://api.openai.com/v1/images/generations', {
