@@ -588,16 +588,6 @@ export default function App() {
     }
   }
 
-  if (!authInitialized) {
-    return (
-      <div className="app-shell">
-        <ViewLayout className="auth-view">
-          <p className="loading-block">Initialising workspace…</p>
-        </ViewLayout>
-      </div>
-    );
-  }
-
   function normalizeFieldKey(value) {
     return value
       .toLowerCase()
@@ -874,7 +864,14 @@ export default function App() {
   let viewClassName = '';
   let viewContent = null;
 
-  if (configError) {
+  if (!authInitialized) {
+    viewClassName = 'auth-view';
+    viewContent = (
+      <div className="loading-block" role="status">
+        Initialising workspace…
+      </div>
+    );
+  } else if (configError) {
     viewClassName = 'auth-view';
     viewContent = (
       <div className="config-error">
@@ -962,7 +959,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {configError ? null : (
+      {configError || !authInitialized ? null : (
         <HeaderNav
           activeView={activeView}
           isAdminMode={isAdminMode}
