@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, ExternalLink, History } from 'lucide-react';
+import { Download, ExternalLink, History, Copy, Eye, EyeOff } from 'lucide-react';
 
 export default function HomeView({
   history,
@@ -11,16 +11,19 @@ export default function HomeView({
   error
 }) {
   const [activeEntryId, setActiveEntryId] = useState(null);
+  const [showFullPrompt, setShowFullPrompt] = useState(false);
 
   const resolveImageSrc = entry => entry.previewUrl || entry.url || '';
   const activeEntry = activeEntryId ? history.find(entry => entry.id === activeEntryId) : null;
 
   function handleOpenModal(entry) {
     setActiveEntryId(entry.id);
+    setShowFullPrompt(false);
   }
 
   function handleCloseModal() {
     setActiveEntryId(null);
+    setShowFullPrompt(false);
   }
 
   function handleReuse(entry) {
@@ -28,16 +31,35 @@ export default function HomeView({
     handleCloseModal();
   }
 
-  function handleDownload(entry) {
+  async function handleDownload(entry) {
     const src = resolveImageSrc(entry);
     if (!src) return;
-    const link = document.createElement('a');
-    link.href = src;
     const safeName = (entry.templateName || 'render').replace(/[^a-z0-9_-]+/gi, '-').toLowerCase();
-    link.download = `${safeName}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      let downloadUrl = src;
+      let revokeAfter = false;
+      if (!src.startsWith('data:')) {
+        const response = await fetch(src, { mode: 'cors' });
+        const blob = await response.blob();
+        downloadUrl = URL.createObjectURL(blob);
+        revokeAfter = true;
+      }
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `${safeName}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      if (revokeAfter) URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error('Failed to download image', err);
+      onOpenImage(src);
+    }
+  }
+
+  function handleCopyPrompt(entry) {
+    if (!entry?.prompt || !navigator?.clipboard) return;
+    navigator.clipboard.writeText(entry.prompt).catch(copyErr => console.error('Copy failed', copyErr));
   }
 
   return (
@@ -142,6 +164,22 @@ export default function HomeView({
                   <span className="history-meta-value">
                     {activeEntry.createdAt ? new Date(activeEntry.createdAt).toLocaleString() : 'Unknown'}
                   </span>
+                </div>
+                <div className="history-meta-block prompt-block">
+                  <div className="prompt-header">
+                    <span className="history-meta-label">Prompt</span>
+                    <div className="prompt-actions">
+                      <button type="button" onClick={() => setShowFullPrompt(prev => !prev)}>
+                        {showFullPrompt ? <EyeOff size={16} /> : <Eye size={16} />}
+                        <span>{showFullPrompt ? 'Collapse' : 'Show full'}</span>
+                      </button>
+                      <button type="button" onClick={() => handleCopyPrompt(activeEntry)}>
+                        <Copy size={16} />
+                        <span>Copy</span>
+                      </button>
+                    </div>
+                  </div>
+                  <p className={showFullPrompt ? 'history-prompt-full' : 'history-prompt-truncated'}>{activeEntry.prompt}</p>
                 </div>
               </div>
             </div>

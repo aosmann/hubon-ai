@@ -1279,6 +1279,75 @@ select:focus {
   color: var(--color-muted);
 }
 
+.history-meta-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.history-meta-label {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.history-meta-value {
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.prompt-block {
+  gap: 12px;
+}
+
+.prompt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.prompt-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.prompt-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.prompt-actions button:hover {
+  color: var(--color-primary);
+}
+
+.history-prompt-truncated {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.history-prompt-full {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+
 .history-modal .template-modal-actions button {
   display: inline-flex;
   align-items: center;
