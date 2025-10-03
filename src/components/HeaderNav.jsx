@@ -55,14 +55,20 @@ export default function HeaderNav({
             <span>Brand Style</span>
           </button>
           {canEditTemplates && (
-            <button
-              type="button"
-              className={`action-btn ${isAdminMode ? 'admin-active' : ''}`}
-              onClick={onToggleAdmin}
-            >
-              <Settings2 size={18} />
-              <span>Admin Mode</span>
-            </button>
+            <div className="admin-toggle">
+              <span className="admin-toggle-label">
+                <Settings2 size={18} />
+                Admin
+              </span>
+              <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={isAdminMode}
+                  onChange={onToggleAdmin}
+                />
+                <span className="toggle-slider" aria-hidden="true" />
+              </label>
+            </div>
           )}
         </nav>
       )}

@@ -62,7 +62,7 @@ export default function TemplatesView({
                       {isExpanded ? 'Close Editor' : 'Edit Template'}
                     </button>
                   )}
-                  {canManageTemplates && (
+                  {canManageTemplates && isAdminMode && (
                     <button type="button" className="danger" onClick={() => onDeleteTemplate(template.id)}>
                       Delete
                     </button>
