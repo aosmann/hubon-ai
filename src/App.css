@@ -299,15 +299,69 @@ button.danger:hover {
   gap: 12px;
 }
 
-.user-pill {
+.user-menu {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-menu-trigger {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  background: #eef2f6;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.user-menu-trigger:hover {
+  background: #e2e8f0;
+  border-color: var(--border-strong);
 }
 
 .user-email {
   font-weight: 500;
   font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-menu-pop {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.user-menu-pop button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  color: var(--color-text);
+  font-size: 0.92rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.user-menu-pop button:hover {
+  background: #f1f5f9;
 }
 
 
@@ -780,4 +834,18 @@ select:focus {
   .page-header {
     flex-direction: column;
   }
+}
+.action-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  background: #f2f2f200;
+  color: var(--color-muted);
+}
+
+.action-btn span {
+  flex: 1;
+  text-align: left;
 }

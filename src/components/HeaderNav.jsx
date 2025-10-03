@@ -1,4 +1,4 @@
-import { Home, LayoutTemplate, Palette, Settings2 } from 'lucide-react';
+import { Home, LayoutTemplate, Palette, Settings2, User2, LogOut } from 'lucide-react';
 
 export default function HeaderNav({
   activeView,
@@ -54,11 +54,17 @@ export default function HeaderNav({
       <div className="side-nav-grow" />
 
       {isAuthed ? (
-        <div className="user-pill">
-          <span className="user-email">{user.email}</span>
-          <button type="button" className="secondary" onClick={onLogout}>
-            Sign out
+        <div className="user-menu">
+          <button type="button" className="user-menu-trigger">
+            <User2 size={18} />
+            <span className="user-email">{user.email}</span>
           </button>
+          <div className="user-menu-pop">
+            <button type="button" onClick={onLogout}>
+              <LogOut size={16} />
+              <span>Sign out</span>
+            </button>
+          </div>
         </div>
       ) : null}
     </aside>
