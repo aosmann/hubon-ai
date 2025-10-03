@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { Pencil, Trash2, X } from 'lucide-react';
+
 export default function TemplatesView({
   templates,
   editingTemplates,
@@ -17,6 +20,23 @@ export default function TemplatesView({
   onCancelTemplateEdit,
   onSaveTemplateEdit
 }) {
+  const [activeTemplateId, setActiveTemplateId] = useState(null);
+
+  const handleOpenTemplate = templateId => {
+    setActiveTemplateId(templateId);
+  };
+
+  const handleCloseModal = () => {
+    if (activeTemplateId && editingTemplates[activeTemplateId]) {
+      onCancelTemplateEdit(activeTemplateId);
+    }
+    setActiveTemplateId(null);
+  };
+
+  const modalTemplate = activeTemplateId ? templates.find(template => template.id === activeTemplateId) : null;
+  const modalDraft = modalTemplate ? editingTemplates[modalTemplate.id] ?? modalTemplate : null;
+  const modalEditing = modalTemplate && expandedTemplateEditor === modalTemplate.id;
+
   return (
     <>
       <div className="page-header">
@@ -42,147 +62,25 @@ export default function TemplatesView({
         <p className="muted loading-block">Loading templates…</p>
       ) : templates.length ? (
         <div className="template-grid">
-          {templates.map(template => {
-            const draft = editingTemplates[template.id] ?? template;
-            const isExpanded = expandedTemplateEditor === template.id;
-            return (
-              <article key={template.id} className="template-card">
-                <div className="template-image" style={{ backgroundImage: `url(${template.image})` }} />
+          {templates.map(template => (
+            <article
+              key={template.id}
+              className="template-card"
+              onClick={() => handleOpenTemplate(template.id)}
+              role="button"
+              tabIndex={0}
+            >
+              <div className="template-image" style={{ backgroundImage: `url(${template.image})` }} />
               <div className="template-body">
                 <header className="template-heading">
                   <h2>{template.name}</h2>
                   <p>{template.description}</p>
                 </header>
-                <div className="template-actions">
-                  <button type="button" className="primary" onClick={() => onSelectTemplate(template.id)}>
-                    Use Template
-                  </button>
-                  {canManageTemplates && isAdminMode && (
-                    <button type="button" className="secondary" onClick={() => onToggleTemplateEditor(template)}>
-                      {isExpanded ? 'Close Editor' : 'Edit Template'}
-                    </button>
-                  )}
-                  {canManageTemplates && isAdminMode && (
-                    <button type="button" className="danger" onClick={() => onDeleteTemplate(template.id)}>
-                      Delete
-                    </button>
-                  )}
-                </div>
-                {canManageTemplates && isAdminMode && isExpanded && (
-                  <div className="template-editor">
-                    <div className="editor-group">
-                      <label>
-                        <span>Template Name</span>
-                        <input
-                          type="text"
-                          value={draft.name}
-                          onChange={event => onTemplateMetaChange(template.id, 'name', event.target.value)}
-                        />
-                      </label>
-                      <label>
-                        <span>Description</span>
-                        <textarea
-                          value={draft.description}
-                          onChange={event => onTemplateMetaChange(template.id, 'description', event.target.value)}
-                        />
-                      </label>
-                      <label>
-                        <span>Preview Image URL</span>
-                        <input
-                          type="text"
-                          value={draft.image}
-                          onChange={event => onTemplateMetaChange(template.id, 'image', event.target.value)}
-                        />
-                      </label>
-                      <label>
-                        <span>Base Prompt</span>
-                        <textarea
-                          rows={4}
-                          value={draft.prompt}
-                          onChange={event => onTemplateMetaChange(template.id, 'prompt', event.target.value)}
-                        />
-                      </label>
-                    </div>
-
-                    <div className="editor-fields">
-                      <div className="editor-fields-header">
-                        <h3>Form Fields</h3>
-                        <button type="button" onClick={() => onAddField(template.id)}>
-                          + Add Field
-                        </button>
-                      </div>
-                      <div className="editor-field-list">
-                        {draft.fields.map(field => (
-                          <div key={field.id} className="editor-field">
-                            <div className="field-row">
-                              <label>
-                                <span>Label</span>
-                                <input
-                                  type="text"
-                                  value={field.label}
-                                  onChange={event =>
-                                    onTemplateFieldChange(template.id, field.id, 'label', event.target.value)
-                                  }
-                                />
-                              </label>
-                              <label>
-                                <span>Field Key</span>
-                                <input
-                                  type="text"
-                                  value={field.key}
-                                  onChange={event =>
-                                    onTemplateFieldChange(template.id, field.id, 'key', event.target.value)
-                                  }
-                                />
-                              </label>
-                              <label>
-                                <span>Type</span>
-                                <select
-                                  value={field.type}
-                                  onChange={event =>
-                                    onTemplateFieldChange(template.id, field.id, 'type', event.target.value)
-                                  }
-                                >
-                                  <option value="text">Single line</option>
-                                  <option value="textarea">Multi line</option>
-                                </select>
-                              </label>
-                            </div>
-                            <label>
-                              <span>Placeholder</span>
-                              <input
-                                type="text"
-                                value={field.placeholder}
-                                onChange={event =>
-                                  onTemplateFieldChange(template.id, field.id, 'placeholder', event.target.value)
-                                }
-                              />
-                            </label>
-                            <div className="field-actions">
-                              <button type="button" onClick={() => onRemoveField(template.id, field.id)}>
-                                Remove field
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="editor-footer">
-                      <button type="button" className="secondary" onClick={() => onCancelTemplateEdit(template.id)}>
-                        Cancel
-                      </button>
-                      <button type="button" className="primary" onClick={() => onSaveTemplateEdit(template.id)}>
-                        Save changes
-                      </button>
-                    </div>
-                  </div>
-                )}
+                <span className="template-open-hint">Tap to view details</span>
               </div>
             </article>
-          );
-        })}
-      </div>
+          ))}
+        </div>
       ) : (
         <section className="empty-state">
           <h2>No templates yet</h2>
@@ -199,6 +97,174 @@ export default function TemplatesView({
             </div>
           )}
         </section>
+      )}
+
+      {modalTemplate && modalDraft && (
+        <div className="template-modal" role="dialog" aria-modal="true">
+          <div className="template-modal-backdrop" onClick={handleCloseModal} />
+          <div className="template-modal-content">
+            <button type="button" className="modal-close" onClick={handleCloseModal} aria-label="Close">
+              <X size={20} />
+            </button>
+            <div className="template-modal-grid">
+              <div className="template-modal-media">
+                <img src={modalDraft.image} alt={`${modalDraft.name} preview`} />
+              </div>
+              <div className="template-modal-details">
+                <header>
+                  <h2>{modalDraft.name}</h2>
+                  <p>{modalDraft.description}</p>
+                </header>
+                <div className="template-modal-actions">
+                  <button
+                    type="button"
+                    className="primary"
+                    onClick={() => {
+                      onSelectTemplate(modalDraft.id);
+                      handleCloseModal();
+                    }}
+                  >
+                    Use Template
+                  </button>
+                  {canManageTemplates && (
+                    <div className="template-modal-admin">
+                      <button
+                        type="button"
+                        className={`icon-button ${modalEditing ? 'active' : ''}`}
+                        onClick={() => onToggleTemplateEditor(modalDraft)}
+                        aria-label={modalEditing ? 'Close editor' : 'Edit template'}
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
+                        type="button"
+                        className="icon-button danger"
+                        onClick={() => {
+                          onDeleteTemplate(modalDraft.id);
+                          handleCloseModal();
+                        }}
+                        aria-label="Delete template"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {canManageTemplates && isAdminMode && modalEditing && (
+                  <div className="template-editor">
+                    <div className="editor-group">
+                      <label>
+                        <span>Template Name</span>
+                        <input
+                          type="text"
+                          value={modalDraft.name}
+                          onChange={event => onTemplateMetaChange(modalDraft.id, 'name', event.target.value)}
+                        />
+                      </label>
+                      <label>
+                        <span>Description</span>
+                        <textarea
+                          value={modalDraft.description}
+                          onChange={event => onTemplateMetaChange(modalDraft.id, 'description', event.target.value)}
+                        />
+                      </label>
+                      <label>
+                        <span>Preview Image URL</span>
+                        <input
+                          type="text"
+                          value={modalDraft.image}
+                          onChange={event => onTemplateMetaChange(modalDraft.id, 'image', event.target.value)}
+                        />
+                      </label>
+                      <label>
+                        <span>Base Prompt</span>
+                        <textarea
+                          rows={4}
+                          value={modalDraft.prompt}
+                          onChange={event => onTemplateMetaChange(modalDraft.id, 'prompt', event.target.value)}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="editor-fields">
+                      <div className="editor-fields-header">
+                        <h3>Form Fields</h3>
+                        <button type="button" onClick={() => onAddField(modalDraft.id)}>
+                          + Add Field
+                        </button>
+                      </div>
+                      <div className="editor-field-list">
+                        {modalDraft.fields.map(field => (
+                          <div key={field.id} className="editor-field">
+                            <div className="field-row">
+                              <label>
+                                <span>Label</span>
+                                <input
+                                  type="text"
+                                  value={field.label}
+                                  onChange={event =>
+                                    onTemplateFieldChange(modalDraft.id, field.id, 'label', event.target.value)
+                                  }
+                                />
+                              </label>
+                              <label>
+                                <span>Field Key</span>
+                                <input
+                                  type="text"
+                                  value={field.key}
+                                  onChange={event =>
+                                    onTemplateFieldChange(modalDraft.id, field.id, 'key', event.target.value)
+                                  }
+                                />
+                              </label>
+                              <label>
+                                <span>Type</span>
+                                <select
+                                  value={field.type}
+                                  onChange={event =>
+                                    onTemplateFieldChange(modalDraft.id, field.id, 'type', event.target.value)
+                                  }
+                                >
+                                  <option value="text">Single line</option>
+                                  <option value="textarea">Multi line</option>
+                                </select>
+                              </label>
+                            </div>
+                            <label>
+                              <span>Placeholder</span>
+                              <input
+                                type="text"
+                                value={field.placeholder}
+                                onChange={event =>
+                                  onTemplateFieldChange(modalDraft.id, field.id, 'placeholder', event.target.value)
+                                }
+                              />
+                            </label>
+                            <div className="field-actions">
+                              <button type="button" onClick={() => onRemoveField(modalDraft.id, field.id)}>
+                                Remove field
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="editor-footer">
+                      <button type="button" className="secondary" onClick={() => onCancelTemplateEdit(modalDraft.id)}>
+                        Cancel
+                      </button>
+                      <button type="button" className="primary" onClick={() => onSaveTemplateEdit(modalDraft.id)}>
+                        Save changes
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
