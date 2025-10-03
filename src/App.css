@@ -8,6 +8,7 @@
   --color-primary-soft: #3ab43a;
   --color-text: #161616;
   --color-white: #f4f4f4;
+  --color-black: #141414;
   --color-muted: #656565;
   --color-hover: #d2eadc;
   --radius-lg: 16px;
@@ -250,9 +251,10 @@ button.secondary {
 }
 
 button.primary {
-  background: var(--color-primary-soft);
-  color: #ffffff;
-  font-weight: 600;
+  background: transparent;
+  border: 1px solid var(--color-text);
+  color: var(--color-text);
+  font-weight: 400;
 }
 
 button.primary:disabled {
@@ -345,8 +347,8 @@ button.danger:hover {
   z-index: 1000;
 
   /* existing look + light theme tokens */
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  padding: 12px 36px;
   font-size: 0.95rem;
   border: 1px solid var(--border-subtle);
   background: var(--bg-surface);
@@ -637,21 +639,6 @@ button.danger:hover {
   pointer-events: auto;
 }
 
-.modal-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  border: none;
-  background: rgba(15, 23, 42, 0.05);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
 .template-modal-grid {
   display: grid;
   gap: 28px;
@@ -684,48 +671,53 @@ button.danger:hover {
 
 .template-modal-actions {
   display: flex;
-  align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
 .template-modal-admin {
   display: flex;
-  align-items: center;
   gap: 8px;
 }
 
 .icon-button {
   border: 1px solid var(--border-subtle);
-  background: #f8f9fc;
-  color: var(--color-text);
+  background: #ffffff00;
+  color: var(--color-muted);
   width: 40px;
   height: 40px;
-  display: inline-flex;
+  cursor: pointer;
+
+  /* center the icon */
+  display: inline-flex;           /* was: inline */
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  backdrop-filter: blur(6px); 
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+
+  /* cleanup */
+  padding: 0;                     /* avoid extra shift */
+  line-height: 0;                 /* prevent line-height affecting centering */
+  vertical-align: middle;
+  transition: background .2s ease, color .2s ease, transform .2s ease;
 }
 
+/* ensure SVG inherits color and doesn't add extra space */
 .icon-button svg {
   width: 18px;
   height: 18px;
+  display: block;
   stroke: currentColor;
-  stroke-width: 1.75;
 }
 
+
 .icon-button:hover {
-  background: #e2e8f0;
+  color: #355cc5;
   transform: translateY(-1px);
 }
 
 .icon-button.danger {
   color: #b91c1c;
   border-color: #fecaca;
-  background: #fff5f5;
+  background: #ffffff00;
 }
 
 .icon-button.danger:hover {
@@ -742,29 +734,41 @@ button.danger:hover {
   position: absolute;
   top: 18px;
   right: 18px;
-  border: none;
-  background: rgba(15, 23, 42, 0.05);
-  border-radius: 50%;
   width: 36px;
   height: 36px;
-  display: flex;
+  border: none;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.05);
+  color: var(--color-muted);
+  cursor: pointer;
+
+  /* center the icon */
+  display: inline-flex;          /* was: inline */
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  color: var(--color-muted);
-  transition: background 0.2s ease, color 0.2s ease;
+
+  /* prevent shifts from text metrics */
+  padding: 0;
+  line-height: 0;
+
+  transition: background .2s ease, color .2s ease;
 }
 
 .modal-close:hover {
-  background: rgba(15, 23, 42, 0.12);
+  background: rgba(15, 23, 42, 0.08);
   color: var(--color-text);
 }
 
+/* ensure the icon itself doesn’t add extra space and inherits color */
 .modal-close svg {
   width: 18px;
   height: 18px;
-  stroke-width: 1.75;
+  display: block;
+  stroke: currentColor;
 }
+
+
+
 
 @media (max-width: 960px) {
   .template-modal-grid {
@@ -1162,64 +1166,111 @@ select:focus {
   gap: 8px;
 }
 
-.icon-button {
+
+
+
+
+/* Center the auth view */
+.auth-wrap {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vw, 32px);
+}
+
+/* Card */
+.auth-card {
+  width: min(520px, 100%);
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  background: #f8f9fc;
-  color: var(--color-text);
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: clamp(20px, 4vw, 28px);
 }
 
-.icon-button:hover {
-  background: #e2e8f0;
-  transform: translateY(-1px);
+/* Header */
+.auth-header {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.auth-header h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.4vw, 1.8rem);
+  letter-spacing: -0.01em;
+}
+.auth-header .muted {
+  margin: 0;
 }
 
-.icon-button.danger {
-  color: #b91c1c;
-  border-color: #fecaca;
-  background: #fff5f5;
+/* Form */
+.auth-form {
+  display: grid;
+  gap: 16px;
 }
 
-.icon-button.danger:hover {
-  background: #fee2e2;
+/* Label block */
+.auth-label {
+  display: grid;
+  gap: 8px;
 }
 
-.icon-button.active {
-  background: var(--color-primary);
-  color: #fff;
-  border-color: transparent;
-}
-
-.modal-close {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  border: none;
-  background: rgba(15, 23, 42, 0.05);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
+/* Input with inline action (show/hide) */
+.input-with-action {
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--color-muted);
-  transition: background 0.2s ease, color 0.2s ease;
+  align-items: stretch;
 }
-
-.modal-close:hover {
-  background: rgba(15, 23, 42, 0.12);
+.input-with-action input {
+  flex: 1;
+  padding-right: 72px; /* space for the action button */
+}
+.input-action {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  translate: 0 -50%;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: #f8fafc;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.input-action:hover {
+  background: #edf2f7;
+  border-color: var(--border-strong);
   color: var(--color-text);
 }
 
-.modal-close svg {
-  width: 18px;
-  height: 18px;
+/* Hint text */
+.hint { margin-top: 4px; font-size: 0.85rem; }
+
+/* Error banner */
+.banner {
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  background: #f8fafc;
+}
+.banner-error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Actions */
+.auth-actions {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Small screens: tighten spacing a bit */
+@media (max-width: 420px) {
+  .auth-card { padding: 18px; }
+  .input-action { height: 32px; }
 }

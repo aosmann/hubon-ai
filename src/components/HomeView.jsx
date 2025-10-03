@@ -18,7 +18,7 @@ export default function HomeView({
           </p>
         </div>
         <div className="page-actions">
-          <button type="button" className="primary" onClick={onBrowseTemplates}>
+          <button type="button" className="secondary" onClick={onBrowseTemplates}>
             Browse templates
           </button>
         </div>
@@ -51,7 +51,7 @@ export default function HomeView({
                   </p>
                   <div className="history-actions">
                     {templateExists && (
-                      <button type="button" className="primary" onClick={() => onReuseHistoryEntry(entry)}>
+                      <button type="button" className="secondary" onClick={() => onReuseHistoryEntry(entry)}>
                         Reuse template
                       </button>
                     )}
@@ -71,7 +71,7 @@ export default function HomeView({
             Generate your first visual to see it saved here. Browse templates to get started quickly.
           </p>
           <div className="empty-actions">
-            <button type="button" className="primary" onClick={onBrowseTemplates}>
+            <button type="button" className="secondary" onClick={onBrowseTemplates}>
               Browse templates
             </button>
           </div>
