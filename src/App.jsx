@@ -1012,11 +1012,13 @@ export default function App() {
           onLogout={handleLogout}
         />
       )}
-      <main className="page-area">
+      <div className="app-content">
         {globalMessage && <div className="app-banner success">{globalMessage}</div>}
         {configError && <div className="app-banner error">{configError}</div>}
-        {viewContent && <ViewLayout className={viewClassName}>{viewContent}</ViewLayout>}
-      </main>
+        <main className="page-area">
+          {viewContent && <ViewLayout className={viewClassName}>{viewContent}</ViewLayout>}
+        </main>
+      </div>
     </div>
   );
 }

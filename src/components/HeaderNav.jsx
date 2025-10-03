@@ -10,40 +10,43 @@ export default function HeaderNav({
   onLogout
 }) {
   const isAuthed = Boolean(user);
+
   return (
-    <header className="shell-header">
+    <aside className="side-nav">
       <div className="branding">
         <span className="product-mark">Hubon AI</span>
         <span className="product-subtitle">Powered by Kesewi</span>
       </div>
-      <nav className="header-actions">
-        {isAuthed && (
-          <>
-            <button type="button" className={activeView === 'home' ? 'action-btn active' : 'action-btn'} onClick={onHome}>
-              Home
-            </button>
+
+      {isAuthed && (
+        <nav className="side-nav-links">
+          <button type="button" className={activeView === 'home' ? 'action-btn active' : 'action-btn'} onClick={onHome}>
+            Home
+          </button>
+          <button
+            type="button"
+            className={activeView === 'templates' ? 'action-btn active' : 'action-btn'}
+            onClick={onTemplates}
+          >
+            Templates
+          </button>
+          <button type="button" className={activeView === 'brand' ? 'action-btn active' : 'action-btn'} onClick={onBrand}>
+            Brand Style
+          </button>
+          {canEditTemplates && (
             <button
               type="button"
-              className={activeView === 'templates' ? 'action-btn active' : 'action-btn'}
-              onClick={onTemplates}
+              className={`action-btn ${isAdminMode ? 'active' : ''}`}
+              onClick={onToggleAdmin}
             >
-              Templates
+              Admin Mode
             </button>
-            <button type="button" className={activeView === 'brand' ? 'action-btn active' : 'action-btn'} onClick={onBrand}>
-              Brand Style
-            </button>
-            {canEditTemplates && (
-              <button
-                type="button"
-                className={`action-btn ${isAdminMode ? 'active' : ''}`}
-                onClick={onToggleAdmin}
-              >
-                Admin Mode
-              </button>
-            )}
-          </>
-        )}
-      </nav>
+          )}
+        </nav>
+      )}
+
+      <div className="side-nav-grow" />
+
       {isAuthed ? (
         <div className="user-pill">
           <span className="user-email">{user.email}</span>
@@ -52,6 +55,6 @@ export default function HeaderNav({
           </button>
         </div>
       ) : null}
-    </header>
+    </aside>
   );
 }
