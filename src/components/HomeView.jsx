@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { Download, ExternalLink, History } from 'lucide-react';
+
 export default function HomeView({
   history,
   templates,
@@ -7,7 +10,36 @@ export default function HomeView({
   isLoading,
   error
 }) {
+  const [activeEntryId, setActiveEntryId] = useState(null);
+
   const resolveImageSrc = entry => entry.previewUrl || entry.url || '';
+  const activeEntry = activeEntryId ? history.find(entry => entry.id === activeEntryId) : null;
+
+  function handleOpenModal(entry) {
+    setActiveEntryId(entry.id);
+  }
+
+  function handleCloseModal() {
+    setActiveEntryId(null);
+  }
+
+  function handleReuse(entry) {
+    onReuseHistoryEntry(entry);
+    handleCloseModal();
+  }
+
+  function handleDownload(entry) {
+    const src = resolveImageSrc(entry);
+    if (!src) return;
+    const link = document.createElement('a');
+    link.href = src;
+    const safeName = (entry.templateName || 'render').replace(/[^a-z0-9_-]+/gi, '-').toLowerCase();
+    link.download = `${safeName}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   return (
     <>
       <div className="page-header">
@@ -34,7 +66,13 @@ export default function HomeView({
             const templateExists = templates.some(template => template.id === entry.templateId);
             const timestampLabel = entry.createdAt ? new Date(entry.createdAt).toLocaleString() : '';
             return (
-              <article key={entry.id} className="history-card">
+              <article
+                key={entry.id}
+                className="history-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleOpenModal(entry)}
+              >
                 <div className="history-thumb">
                   <img
                     src={resolveImageSrc(entry)}
@@ -49,16 +87,7 @@ export default function HomeView({
                   <p className="history-prompt" title={entry.prompt}>
                     {entry.prompt}
                   </p>
-                  <div className="history-actions">
-                    {templateExists && (
-                      <button type="button" className="secondary" onClick={() => onReuseHistoryEntry(entry)}>
-                        Reuse template
-                      </button>
-                    )}
-                    <button type="button" className="secondary" onClick={() => onOpenImage(resolveImageSrc(entry))}>
-                      Open image
-                    </button>
-                  </div>
+                  <span className="history-open-hint">Tap to view details</span>
                 </div>
               </article>
             );
@@ -76,6 +105,48 @@ export default function HomeView({
             </button>
           </div>
         </section>
+      )}
+
+      {activeEntry && (
+        <div className="template-modal" role="dialog" aria-modal="true">
+          <div className="template-modal-backdrop" onClick={handleCloseModal} />
+          <div className="template-modal-content history-modal">
+            <button type="button" className="modal-close" onClick={handleCloseModal} aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+            <div className="template-modal-grid">
+              <div className="template-modal-media">
+                <img src={resolveImageSrc(activeEntry)} alt={activeEntry.templateName || 'Generated render'} />
+              </div>
+              <div className="template-modal-details">
+                <header>
+                  <h2>{activeEntry.templateName || 'Saved generation'}</h2>
+                  <p>{activeEntry.prompt}</p>
+                </header>
+                <div className="template-modal-actions">
+                  <button type="button" className="primary" onClick={() => handleReuse(activeEntry)}>
+                    <History size={18} />
+                    <span>Reuse Template</span>
+                  </button>
+                  <button type="button" className="secondary" onClick={() => onOpenImage(resolveImageSrc(activeEntry))}>
+                    <ExternalLink size={18} />
+                    <span>Open Image</span>
+                  </button>
+                  <button type="button" className="secondary" onClick={() => handleDownload(activeEntry)}>
+                    <Download size={18} />
+                    <span>Download</span>
+                  </button>
+                </div>
+                <div className="history-meta-block">
+                  <span className="history-meta-label">Generated</span>
+                  <span className="history-meta-value">
+                    {activeEntry.createdAt ? new Date(activeEntry.createdAt).toLocaleString() : 'Unknown'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

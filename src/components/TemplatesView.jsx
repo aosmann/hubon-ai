@@ -194,7 +194,7 @@ export default function TemplatesView({
                     <div className="editor-fields">
                       <div className="editor-fields-header">
                         <h3>Form Fields</h3>
-                        <button type="button" onClick={() => onAddField(modalDraft.id)}>
+                        <button type="button" className='secondary' onClick={() => onAddField(modalDraft.id)}>
                           + Add Field
                         </button>
                       </div>

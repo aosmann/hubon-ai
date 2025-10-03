@@ -537,7 +537,7 @@ button.danger:hover {
 /* ≥ 1024px: 3 columns */
 @media (min-width: 1024px) {
   .template-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -561,8 +561,7 @@ button.danger:hover {
 }
 
 .template-image {
-  border-radius: var(--radius-sm);
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 4 / 3;
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
@@ -1273,4 +1272,37 @@ select:focus {
 @media (max-width: 420px) {
   .auth-card { padding: 18px; }
   .input-action { height: 32px; }
+}
+
+.history-open-hint {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.history-modal .template-modal-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-meta-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.history-meta-label {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.history-meta-value {
+  font-size: 0.95rem;
+  color: var(--color-text);
 }
