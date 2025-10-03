@@ -709,6 +709,13 @@ button.danger:hover {
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
+.icon-button svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.75;
+}
+
 .icon-button:hover {
   background: #e2e8f0;
   transform: translateY(-1px);
@@ -750,6 +757,12 @@ button.danger:hover {
 .modal-close:hover {
   background: rgba(15, 23, 42, 0.12);
   color: var(--color-text);
+}
+
+.modal-close svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.75;
 }
 
 @media (max-width: 960px) {
