@@ -4,11 +4,12 @@
   --bg-surface: #ffffff;
   --border-subtle: #e2e8f0;
   --border-strong: #cbd5e1;
-  --color-primary: #3e9577;
-  --color-primary-soft: #2eca8b;
-  --color-text: #0f172a;
+  --color-primary: #4cde4c;
+  --color-primary-soft: #3ab43a;
+  --color-text: #161616;
   --color-white: #f4f4f4;
-  --color-muted: #64748b;
+  --color-muted: #656565;
+  --color-hover: #d2eadc;
   --radius-lg: 16px;
   --radius-md: 12px;
   --radius-sm: 8px;
@@ -53,7 +54,6 @@ button {
   display: flex;
   align-items: stretch;
   gap: 32px;
-  padding: clamp(20px, 4vw, 40px);
 }
 
 .branding {
@@ -76,20 +76,49 @@ button {
 }
 
 
+/* Reusable width + gap */
+:root {
+  --sidebar-w: clamp(220px, 19vw, 280px);
+  --sidebar-gap: 0px; /* space between sidebar and content */
+}
+
+/* Your fixed left sidebar */
 .side-nav {
-  width: clamp(220px, 19vw, 280px);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
+  position: fixed;              /* keep this */
+  left: 0;
+  top: 0;
+  width: var(--sidebar-w);
+  height: 100dvh;               /* better than 100vh on mobile */
+  background: var(--bg-page);
   padding: 32px 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  position: sticky;
-  top: clamp(16px, 3vw, 32px);
-  max-height: calc(100vh - clamp(32px, 8vh, 80px));
+  overflow: auto;               /* independent scroll */
+  z-index: 20;
 }
+
+/* Shift ONLY the top-level content wrapper */
+.app-shell {
+  margin-left: calc(var(--sidebar-w) + var(--sidebar-gap));
+}
+
+/* Optional: keep content centered / max-width if you use one already */
+/* .app-shell { max-width: 1180px; margin-right: auto; } */
+
+/* Mobile: revert to normal flow so there’s no horizontal scroll */
+@media (max-width: 780px) {
+  .side-nav {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+  .app-shell {
+    margin-left: 0;            /* remove the offset on small screens */
+  }
+}
+
+  
 
 .side-nav-links {
   display: flex;
@@ -106,7 +135,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding-right: clamp(20px, 4vw, 32px);
+  padding: clamp(20px, 4vw, 22px);
+  padding-left: 0px;
 }
 
 .action-btn,
@@ -124,23 +154,33 @@ button.secondary {
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  gap: 10px;
   background: #f2f2f200;
   color: var(--color-muted);
 }
+/* Active (clicked) state */
 .action-btn.active,
-.action-btn:hover {
+.action-btn[aria-pressed="true"] {
   color: var(--color-text);
-  background: #f5f6f7;
+  background: var(--color-primary);
+  cursor: default; /* optional */
+}
+
+/* Hover applies ONLY to non-active buttons */
+.action-btn:not(.active):hover,
+.action-btn[aria-pressed="false"]:hover {
+  color: var(--color-text);
+  background: var(--color-hover);
 }
 
 .action-btn.admin-active{
   color: var(--color-white);
   border-color: var(--border-subtle);
-  background: #3f8d66;
+  background: #141414;
 }
 
 button.primary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-soft));
+  background: var(--color-primary-soft);
   color: #ffffff;
   font-weight: 600;
 }
@@ -180,7 +220,6 @@ button.danger:hover {
 
 .page {
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: clamp(24px, 4vw, 40px);
   box-shadow: var(--shadow-soft);

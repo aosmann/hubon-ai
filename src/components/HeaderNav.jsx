@@ -1,3 +1,5 @@
+import { Home, LayoutTemplate, Palette, Settings2 } from 'lucide-react';
+
 export default function HeaderNav({
   activeView,
   isAdminMode,
@@ -21,25 +23,29 @@ export default function HeaderNav({
       {isAuthed && (
         <nav className="side-nav-links">
           <button type="button" className={activeView === 'home' ? 'action-btn active' : 'action-btn'} onClick={onHome}>
-            Home
+            <Home size={18} />
+            <span>Home</span>
           </button>
           <button
             type="button"
             className={activeView === 'templates' ? 'action-btn active' : 'action-btn'}
             onClick={onTemplates}
           >
-            Templates
+            <LayoutTemplate size={18} />
+            <span>Templates</span>
           </button>
           <button type="button" className={activeView === 'brand' ? 'action-btn active' : 'action-btn'} onClick={onBrand}>
-            Brand Style
+            <Palette size={18} />
+            <span>Brand Style</span>
           </button>
           {canEditTemplates && (
             <button
               type="button"
-              className={`action-btn ${isAdminMode ? 'active' : ''}`}
+              className={`action-btn ${isAdminMode ? 'admin-active' : ''}`}
               onClick={onToggleAdmin}
             >
-              Admin Mode
+              <Settings2 size={18} />
+              <span>Admin Mode</span>
             </button>
           )}
         </nav>
