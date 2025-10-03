@@ -51,7 +51,7 @@ export default function TemplatesView({
             generation.
           </p>
         </div>
-        {canManageTemplates && (
+        {canManageTemplates && isAdminMode && (
           <div className="page-actions">
             <button type="button" className="secondary" onClick={onCreateTemplate}>
               + New Template
@@ -89,11 +89,11 @@ export default function TemplatesView({
         <section className="empty-state">
           <h2>No templates yet</h2>
           <p className="muted">
-            {canManageTemplates
+            {canManageTemplates && isAdminMode
               ? 'Create your first template to kick things off. You can add fields and prompts in the editor.'
               : 'Your workspace does not have any templates yet. Check back later or ask an admin to add one.'}
           </p>
-          {canManageTemplates && (
+          {canManageTemplates && isAdminMode && (
             <div className="empty-actions">
               <button type="button" className="primary" onClick={onCreateTemplate}>
                 + New Template
