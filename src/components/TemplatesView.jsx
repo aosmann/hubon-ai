@@ -126,29 +126,29 @@ export default function TemplatesView({
                   >
                     Use Template
                   </button>
-                  {canManageTemplates && (
-                    <div className="template-modal-admin">
-                      <button
-                        type="button"
-                        className={`icon-button ${modalEditing ? 'active' : ''}`}
-                        onClick={() => onToggleTemplateEditor(modalDraft)}
-                        aria-label={modalEditing ? 'Close editor' : 'Edit template'}
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        type="button"
-                        className="icon-button danger"
-                        onClick={() => {
-                          onDeleteTemplate(modalDraft.id);
-                          handleCloseModal();
-                        }}
-                        aria-label="Delete template"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  )}
+      {canManageTemplates && isAdminMode && (
+        <div className="template-modal-admin">
+          <button
+            type="button"
+            className={`icon-button ${modalEditing ? 'active' : ''}`}
+            onClick={() => onToggleTemplateEditor(modalDraft)}
+            aria-label={modalEditing ? 'Close editor' : 'Edit template'}
+          >
+            <Pencil size={18} />
+          </button>
+          <button
+            type="button"
+            className="icon-button danger"
+            onClick={() => {
+              onDeleteTemplate(modalDraft.id);
+              handleCloseModal();
+            }}
+            aria-label="Delete template"
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
+      )}
                 </div>
 
                 {canManageTemplates && isAdminMode && modalEditing && (
@@ -255,7 +255,16 @@ export default function TemplatesView({
                       <button type="button" className="secondary" onClick={() => onCancelTemplateEdit(modalDraft.id)}>
                         Cancel
                       </button>
-                      <button type="button" className="primary" onClick={() => onSaveTemplateEdit(modalDraft.id)}>
+                      <button
+                        type="button"
+                        className="primary"
+                        onClick={() => {
+                          onSaveTemplateEdit(modalDraft.id);
+                          if (!modalEditing) {
+                            onToggleTemplateEditor(modalDraft);
+                          }
+                        }}
+                      >
                         Save changes
                       </button>
                     </div>
