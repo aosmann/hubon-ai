@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { generateImage } from './openai.js';
 import HeaderNav from './components/HeaderNav.jsx';
 import HomeView from './components/HomeView.jsx';
@@ -211,6 +211,9 @@ export default function App() {
   const [generateError, setGenerateError] = useState('');
   const [globalMessage, setGlobalMessage] = useState('');
   const [configError, setConfigError] = useState('');
+  const lastFetchedUserRef = useRef(null);
+  const dataLoadedRef = useRef(false);
+  const fetchingRef = useRef(false);
 
   const selectedTemplate = useMemo(
     () => templates.find(template => template.id === selectedTemplateId) || null,
@@ -385,14 +388,25 @@ export default function App() {
       setIsAdminMode(false);
       setEditingTemplates({});
       setExpandedTemplateEditor(null);
+      lastFetchedUserRef.current = null;
+      dataLoadedRef.current = false;
+      fetchingRef.current = false;
       return;
     }
 
-    fetchTemplates();
-    fetchBrandStyle();
-    fetchHistory();
-    fetchProfile();
-  }, [authInitialized, fetchBrandStyle, fetchHistory, fetchProfile, fetchTemplates, user]);
+    if (Object.keys(editingTemplates).length > 0) return;
+    if (fetchingRef.current) return;
+
+    const sameUser = lastFetchedUserRef.current === user.id;
+    if (sameUser && dataLoadedRef.current) return;
+
+    lastFetchedUserRef.current = user.id;
+    fetchingRef.current = true;
+    Promise.allSettled([fetchTemplates(), fetchBrandStyle(), fetchHistory(), fetchProfile()]).finally(() => {
+      fetchingRef.current = false;
+      dataLoadedRef.current = true;
+    });
+  }, [authInitialized, editingTemplates, fetchBrandStyle, fetchHistory, fetchProfile, fetchTemplates, isSupabaseConfigured, supabase, user]);
 
   useEffect(() => {
     if (!selectedTemplate) return;

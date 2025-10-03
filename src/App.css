@@ -15,7 +15,8 @@
   --radius-sm: 8px;
   --shadow-soft: 0 24px 48px -32px rgba(15, 23, 42, 0.18);
   --shadow-card: 0 18px 36px -28px rgba(15, 23, 42, 0.25);
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Apple system font stack (no external loads) */
+  font-family: -apple-system, system-ui, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background: var(--bg-page);
   color: var(--color-text);
 }
@@ -29,6 +30,8 @@ body {
   min-height: 100vh;
   background: var(--bg-page);
   color: var(--color-text);
+  overflow-x: hidden;
+
 }
 
 .home-index {
@@ -78,7 +81,7 @@ button {
 
 /* Reusable width + gap */
 :root {
-  --sidebar-w: clamp(220px, 19vw, 280px);
+  --sidebar-w: clamp(220px, 19vw, 230px);
   --sidebar-gap: 0px; /* space between sidebar and content */
 }
 
@@ -136,7 +139,6 @@ button {
   flex-direction: column;
   gap: 24px;
   padding: clamp(20px, 4vw, 22px);
-  padding-left: 0px;
 }
 
 .action-btn,
@@ -237,9 +239,19 @@ button.danger:hover {
   width: 100%;
 }
 
-/* Children fill their track */
+/* Mobile first */
 .page-area > .page {
   width: 100%;
+    overflow-x: hidden;
+
+}
+
+/* Desktop/tablet: subtract sidebar width + gap from the viewport */
+@media (min-width: 780px) {
+  .page-area > .page {
+    /* Use 100dvw to avoid scrollbar-width quirks; switch to 100vw if you prefer */
+    width: calc(97dvw - (var(--sidebar-w) + var(--sidebar-gap)));
+  }
 }
 
 /* Tablets (optional): start introducing multiple columns when there's room */
@@ -257,17 +269,58 @@ button.danger:hover {
 }
 
 
+/* Overlay layer */
 .app-banner {
+  position: fixed;                 /* take out of document flow */
+  top: clamp(12px, 3vw, 24px);
+  right: clamp(12px, 3vw, 24px);
+  z-index: 1000;
+
+  /* existing look + light theme tokens */
   border-radius: var(--radius-md);
   padding: 12px 16px;
   font-size: 0.95rem;
-  border: 1px solid transparent;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-soft);
+
+  /* motion */
+  opacity: 0;
+  transform: translateY(-8px);
+  animation: appBannerIn .28s cubic-bezier(.2,.6,.2,1) forwards;
 }
 
+/* Close button (optional) */
+.app-banner .banner-close {
+  appearance: none;
+  background: transparent;
+  border: none;
+  margin-left: 12px;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+.app-banner .banner-close:hover { color: var(--color-text); }
+
+@keyframes appBannerIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+  .app-banner {
+    left: 12px;          /* full-width on small screens */
+    right: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-banner { animation: none; opacity: 1; transform: none; }
+}
+
+
 .app-banner.success {
-  background: #ecfdf5;
+  background: var(--color-primary-soft);
   border-color: #a7f3d0;
-  color: #047857;
+  color: var(--color-white);
 }
 
 .app-banner.error {
@@ -336,6 +389,9 @@ button.danger:hover {
 }
 
 .user-menu-pop {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-end: calc(100% + 8px);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -344,6 +400,8 @@ button.danger:hover {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: max(220px, 100%);
+  z-index: 5;
 }
 
 .user-menu-pop button {
@@ -397,7 +455,6 @@ button.danger:hover {
   gap: clamp(20px, 3vw, 32px);
   grid-template-columns: 1fr;          /* mobile default: 1 col */
   max-width: 1200px;                   /* keeps rows from stretching edge-to-edge */
-  margin-inline: auto;                 /* center the grid block */
 }
 
 /* ≥ 700px: 2 columns */
@@ -826,9 +883,12 @@ select:focus {
     display: none;
   }
 
-  .user-pill {
+  .user-menu {
     width: 100%;
-    justify-content: space-between;
+  }
+
+  .user-menu-trigger {
+    justify-content: center;
   }
 
   .page-header {

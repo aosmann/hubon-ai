@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Home, LayoutTemplate, Palette, Settings2, User2, LogOut } from 'lucide-react';
 
 export default function HeaderNav({
@@ -12,6 +13,21 @@ export default function HeaderNav({
   onLogout
 }) {
   const isAuthed = Boolean(user);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   return (
     <aside className="side-nav">
@@ -54,17 +70,24 @@ export default function HeaderNav({
       <div className="side-nav-grow" />
 
       {isAuthed ? (
-        <div className="user-menu">
-          <button type="button" className="user-menu-trigger">
+        <div className="user-menu" ref={menuRef}>
+          <button
+            type="button"
+            className="user-menu-trigger"
+            onClick={() => setMenuOpen(prev => !prev)}
+            aria-expanded={menuOpen}
+          >
             <User2 size={18} />
             <span className="user-email">{user.email}</span>
           </button>
-          <div className="user-menu-pop">
-            <button type="button" onClick={onLogout}>
-              <LogOut size={16} />
-              <span>Sign out</span>
-            </button>
-          </div>
+          {menuOpen && (
+            <div className="user-menu-pop">
+              <button type="button" onClick={() => { setMenuOpen(false); onLogout(); }}>
+                <LogOut size={16} />
+                <span>Sign out</span>
+              </button>
+            </div>
+          )}
         </div>
       ) : null}
     </aside>
