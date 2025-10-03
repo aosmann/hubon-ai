@@ -36,6 +36,10 @@ export default function TemplatesView({
   const modalTemplate = activeTemplateId ? templates.find(template => template.id === activeTemplateId) : null;
   const modalDraft = modalTemplate ? editingTemplates[modalTemplate.id] ?? modalTemplate : null;
   const modalEditing = modalTemplate && expandedTemplateEditor === modalTemplate.id;
+  const iconProps = {
+    size: 18,
+    strokeWidth: 1.9,
+  };
 
   return (
     <>
@@ -104,7 +108,7 @@ export default function TemplatesView({
           <div className="template-modal-backdrop" onClick={handleCloseModal} />
           <div className="template-modal-content">
             <button type="button" className="modal-close" onClick={handleCloseModal} aria-label="Close">
-              <X size={18} strokeWidth={1.8} />
+              <X {...iconProps} />
             </button>
             <div className="template-modal-grid">
               <div className="template-modal-media">
@@ -134,7 +138,7 @@ export default function TemplatesView({
             onClick={() => onToggleTemplateEditor(modalDraft)}
             aria-label={modalEditing ? 'Close editor' : 'Edit template'}
           >
-            <Pencil size={18} strokeWidth={1.8} />
+            <Pencil {...iconProps} />
           </button>
           <button
             type="button"
@@ -145,7 +149,7 @@ export default function TemplatesView({
             }}
             aria-label="Delete template"
           >
-            <Trash2 size={18} strokeWidth={1.8} />
+            <Trash2 {...iconProps} />
           </button>
         </div>
       )}

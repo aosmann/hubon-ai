@@ -459,7 +459,7 @@ button.danger:hover {
 .user-menu-pop {
   position: absolute;
   inset-inline-start: 0;
-  inset-block-start: calc(100% + 8px);
+  inset-block-start: calc(-140%);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -468,7 +468,7 @@ button.danger:hover {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: max(220px, 100%);
+  width: 100%;
   z-index: 5;
 }
 
