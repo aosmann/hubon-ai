@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, ExternalLink, History, Copy, Eye, EyeOff } from 'lucide-react';
+import { Download, ExternalLink, History, Copy, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 
 export default function HomeView({
   history,
@@ -26,7 +26,14 @@ export default function HomeView({
     setShowFullPrompt(false);
   }
 
+  const doesTemplateExist = entry => templates.some(template => template.id === entry.templateId);
+
   function handleReuse(entry) {
+    if (!doesTemplateExist(entry)) {
+      const detail = entry.templateName ? `“${entry.templateName}” template` : 'This template';
+      alert(`${detail} is no longer available.`);
+      return;
+    }
     onReuseHistoryEntry(entry);
     handleCloseModal();
   }
@@ -106,9 +113,7 @@ export default function HomeView({
                     <span className="history-template">{entry.templateName || 'Saved generation'}</span>
                     {timestampLabel && <span className="history-time">{timestampLabel}</span>}
                   </div>
-                  <p className="history-prompt" title={entry.prompt}>
-                    {entry.prompt}
-                  </p>
+
                   <span className="history-open-hint">Tap to view details</span>
                 </div>
               </article>
@@ -143,7 +148,6 @@ export default function HomeView({
               <div className="template-modal-details">
                 <header>
                   <h2>{activeEntry.templateName || 'Saved generation'}</h2>
-                  <p>{activeEntry.prompt}</p>
                 </header>
                 <div className="template-modal-actions">
                   <button type="button" className="primary" onClick={() => handleReuse(activeEntry)}>
