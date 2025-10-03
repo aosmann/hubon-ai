@@ -104,7 +104,7 @@ export default function TemplatesView({
           <div className="template-modal-backdrop" onClick={handleCloseModal} />
           <div className="template-modal-content">
             <button type="button" className="modal-close" onClick={handleCloseModal} aria-label="Close">
-              <X size={20} />
+              <X size={18} strokeWidth={1.8} />
             </button>
             <div className="template-modal-grid">
               <div className="template-modal-media">
@@ -134,7 +134,7 @@ export default function TemplatesView({
             onClick={() => onToggleTemplateEditor(modalDraft)}
             aria-label={modalEditing ? 'Close editor' : 'Edit template'}
           >
-            <Pencil size={18} />
+            <Pencil size={18} strokeWidth={1.8} />
           </button>
           <button
             type="button"
@@ -145,7 +145,7 @@ export default function TemplatesView({
             }}
             aria-label="Delete template"
           >
-            <Trash2 size={18} />
+            <Trash2 size={18} strokeWidth={1.8} />
           </button>
         </div>
       )}
