@@ -174,12 +174,30 @@ export default function TemplatesView({
                         />
                       </label>
                       <label>
-                        <span>Preview Image URL</span>
+                        <span>Preview Image</span>
                         <input
-                          type="text"
-                          value={modalDraft.image}
-                          onChange={event => onTemplateMetaChange(modalDraft.id, 'image', event.target.value)}
+                          type="file"
+                          accept="image/*"
+                          onChange={event => {
+                            const file = event.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = e => {
+                                onTemplateMetaChange(modalDraft.id, 'image', e.target?.result);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
                         />
+                        {modalDraft.image && (
+                          <div style={{ marginTop: '8px' }}>
+                            <img
+                              src={modalDraft.image}
+                              alt="Preview"
+                              style={{ maxWidth: '200px', maxHeight: '120px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}
+                            />
+                          </div>
+                        )}
                       </label>
                       <label>
                         <span>Base Prompt</span>
