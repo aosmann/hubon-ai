@@ -58,6 +58,7 @@ export async function generateImage({ prompt, logoAsset = null, useGptImage = fa
     prompt,
     n: 1,
     size: '1024x1024',
+  ...(useGptImage ? { quality: 'low' } : { quality: 'standard' }),
     response_format: 'b64_json'
   };
 
