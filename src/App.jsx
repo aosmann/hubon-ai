@@ -6,6 +6,7 @@ import TemplatesView from './components/TemplatesView.jsx';
 import BrandView from './components/BrandView.jsx';
 import GenerateView from './components/GenerateView.jsx';
 import AuthView from './components/AuthView.jsx';
+import ChatBot from './components/ChatBot.jsx';
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 import './App.css';
 
@@ -468,21 +469,23 @@ export default function App() {
     if (!authInitialized) return;
     if (!isSupabaseConfigured || !supabase) return;
     if (!user) {
-      setTemplates([]);
-      setTemplatesError('');
-      setBrandStyle(emptyBrandStyle);
-      setBrandError('');
-      setHistory([]);
-      setHistoryError('');
-      setProfile(null);
-      setActiveView('home');
-      setSelectedTemplateId(null);
-      setIsAdminMode(false);
-      setEditingTemplates({});
-      setExpandedTemplateEditor(null);
-      lastFetchedUserRef.current = null;
-      dataLoadedRef.current = false;
-      fetchingRef.current = false;
+      if (lastFetchedUserRef.current !== null) {
+        setTemplates([]);
+        setTemplatesError('');
+        setBrandStyle(emptyBrandStyle);
+        setBrandError('');
+        setHistory([]);
+        setHistoryError('');
+        setProfile(null);
+        setActiveView('home');
+        setSelectedTemplateId(null);
+        setIsAdminMode(false);
+        setEditingTemplates({});
+        setExpandedTemplateEditor(null);
+        lastFetchedUserRef.current = null;
+        dataLoadedRef.current = false;
+        fetchingRef.current = false;
+      }
       return;
     }
 
@@ -1196,8 +1199,8 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
-      {configError || !authInitialized ? null : (
+    <div className={`app-shell ${!user ? 'app-shell-fullscreen' : ''}`}>
+      {configError || !authInitialized || !user ? null : (
         <HeaderNav
           activeView={activeView}
           isAdminMode={isAdminMode}
@@ -1217,6 +1220,7 @@ export default function App() {
           {viewContent && <ViewLayout className={viewClassName}>{viewContent}</ViewLayout>}
         </main>
       </div>
+      {user && <ChatBot />}
     </div>
   );
 }
