@@ -41,7 +41,9 @@ export default function HomeView({
   async function handleDownload(entry) {
     const src = resolveImageSrc(entry);
     if (!src) return;
-    const safeName = (entry.templateName || 'render').replace(/[^a-z0-9_-]+/gi, '-').toLowerCase();
+    const safeName = (entry.generationName || entry.templateName || 'render')
+      .replace(/[^a-z0-9_-]+/gi, '-')
+      .toLowerCase();
     try {
       let downloadUrl = src;
       let revokeAfter = false;
@@ -94,6 +96,7 @@ export default function HomeView({
           {history.map(entry => {
             const templateExists = templates.some(template => template.id === entry.templateId);
             const timestampLabel = entry.createdAt ? new Date(entry.createdAt).toLocaleString() : '';
+            const generationLabel = entry.generationName || entry.templateName || 'Saved generation';
             return (
               <article
                 key={entry.id}
@@ -105,14 +108,18 @@ export default function HomeView({
                 <div className="history-thumb">
                   <img
                     src={resolveImageSrc(entry)}
-                    alt={entry.templateName ? `${entry.templateName} render` : 'Generated render'}
+                    alt={`${generationLabel} render`}
                   />
                 </div>
                 <div className="history-details">
                   <div className="history-meta">
-                    <span className="history-template">{entry.templateName || 'Saved generation'}</span>
+                    <span className="history-generation">{generationLabel}</span>
                     {timestampLabel && <span className="history-time">{timestampLabel}</span>}
                   </div>
+                  {entry.logoOverlay ? <span className="history-badge">Logo overlay</span> : null}
+                  {entry.templateName ? (
+                    <span className="history-template muted">Template: {entry.templateName}</span>
+                  ) : null}
 
                   <span className="history-open-hint">Tap to view details</span>
                 </div>
@@ -143,11 +150,17 @@ export default function HomeView({
             </button>
             <div className="template-modal-grid">
               <div className="template-modal-media">
-                <img src={resolveImageSrc(activeEntry)} alt={activeEntry.templateName || 'Generated render'} />
+                <img
+                  src={resolveImageSrc(activeEntry)}
+                  alt={activeEntry.generationName || activeEntry.templateName || 'Generated render'}
+                />
               </div>
               <div className="template-modal-details">
                 <header>
-                  <h2>{activeEntry.templateName || 'Saved generation'}</h2>
+                  <h2>{activeEntry.generationName || activeEntry.templateName || 'Saved generation'}</h2>
+                  {activeEntry.templateName ? (
+                    <p className="muted">Template: {activeEntry.templateName}</p>
+                  ) : null}
                 </header>
                 <div className="template-modal-actions">
                   <button type="button" className="primary" onClick={() => handleReuse(activeEntry)}>
@@ -169,6 +182,22 @@ export default function HomeView({
                     {activeEntry.createdAt ? new Date(activeEntry.createdAt).toLocaleString() : 'Unknown'}
                   </span>
                 </div>
+                {activeEntry.model ? (
+                  <div className="history-meta-block">
+                    <span className="history-meta-label">Model</span>
+                    <span className="history-meta-value">
+                      {activeEntry.model === 'gpt-image-1' ? 'GPT Image' : 'DALL·E 3'}
+                      {activeEntry.logoAssetSource ? ` · Logo source: ${activeEntry.logoAssetSource}` : ''}
+                      {activeEntry.logoOverlay ? ' · Original logo overlay' : ''}
+                    </span>
+                  </div>
+                ) : null}
+                {activeEntry.logoOverlay ? (
+                  <div className="history-meta-block">
+                    <span className="history-meta-label">Logo overlay</span>
+                    <span className="history-meta-value">Original brand logo applied</span>
+                  </div>
+                ) : null}
                 <div className="history-meta-block prompt-block">
                   <div className="prompt-header">
                     <span className="history-meta-label">Prompt</span>

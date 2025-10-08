@@ -64,6 +64,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  align-items: center;
 }
 
 .product-mark {
@@ -789,7 +790,8 @@ button.danger:hover {
 .editor-group label,
 .editor-field label,
 .brand-form label,
-.form-grid label {
+.form-grid label,
+.generation-name {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -908,6 +910,44 @@ select:focus {
   object-fit: contain;
 }
 
+.logo-preview-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+button.link-button {
+  background: none;
+  padding: 0;
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button.link-button:hover {
+  text-decoration: underline;
+}
+
+.model-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.model-toggle input[type='checkbox'] {
+  margin-top: 4px;
+}
+
+.model-toggle.disabled {
+  opacity: 0.55;
+}
+
 .history-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -953,8 +993,25 @@ select:focus {
   gap: 12px;
 }
 
-.history-template {
+.history-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  font-size: 0.75rem;
   font-weight: 600;
+  color: var(--color-text);
+  background: var(--color-hover);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  margin-bottom: 4px;
+}
+
+.history-generation {
+  font-weight: 600;
+}
+
+.history-template {
+  font-size: 0.85rem;
 }
 
 .history-time {
@@ -1015,6 +1072,12 @@ select:focus {
   margin: 0;
 }
 
+.generation-name {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -1023,6 +1086,8 @@ select:focus {
 
 .form-actions {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 12px;
 }
 

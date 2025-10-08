@@ -15,6 +15,8 @@ const adminEmailEnv = (import.meta.env.VITE_ADMIN_EMAILS || '')
   .filter(Boolean);
 const imageBucketName = import.meta.env.VITE_SUPABASE_IMAGE_BUCKET || 'generated-images';
 
+const BRAND_FONT_OPTIONS = ['Poppins', 'Nohemi', 'Inter', 'Times New Roman'];
+
 const defaultTemplates = [
   {
     id: 'social_launch',
@@ -128,6 +130,23 @@ const brandStyleSchema = [
     placeholder: 'https://assets.nimbus.studio/logo.svg'
   },
   {
+    key: 'logoAsset',
+    label: 'Logo Upload',
+    type: 'file'
+  },
+  {
+    key: 'headingFont',
+    label: 'Heading Font',
+    type: 'select',
+    options: BRAND_FONT_OPTIONS
+  },
+  {
+    key: 'bodyFont',
+    label: 'Body Font',
+    type: 'select',
+    options: BRAND_FONT_OPTIONS
+  },
+  {
     key: 'voice',
     label: 'Voice & Tone',
     type: 'textarea',
@@ -154,7 +173,13 @@ const brandStyleSchema = [
 ];
 
 const emptyBrandStyle = brandStyleSchema.reduce((acc, field) => {
-  acc[field.key] = '';
+  if (field.type === 'file') {
+    acc[field.key] = null;
+  } else if (field.type === 'select') {
+    acc[field.key] = field.options?.[0] || '';
+  } else {
+    acc[field.key] = '';
+  }
   return acc;
 }, {});
 
@@ -178,6 +203,65 @@ function base64ToBlob(base64, contentType = 'image/png') {
   return new Blob([byteArray], { type: contentType });
 }
 
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = event => {
+      if (typeof event.target?.result === 'string') {
+        resolve(event.target.result);
+      } else {
+        reject(new Error('Failed to convert blob to data URL.'));
+      }
+    };
+    reader.onerror = () => reject(new Error('Unable to read blob.'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function loadImage(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Failed to load image asset.'));
+    image.src = dataUrl;
+  });
+}
+
+async function overlayLogoOntoImage(base64Image, logoDataUrl) {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return { base64: base64Image, dataUrl: `data:image/png;base64,${base64Image}` };
+  try {
+    const generatedDataUrl = `data:image/png;base64,${base64Image}`;
+    const [generatedImage, logoImage] = await Promise.all([loadImage(generatedDataUrl), loadImage(logoDataUrl)]);
+    const canvas = document.createElement('canvas');
+    canvas.width = generatedImage.width;
+    canvas.height = generatedImage.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas context unavailable.');
+
+    ctx.drawImage(generatedImage, 0, 0);
+
+    const padding = Math.round(canvas.width * 0.03);
+    const maxLogoWidth = Math.round(canvas.width * 0.25);
+    const maxLogoHeight = Math.round(canvas.height * 0.25);
+    const widthScale = maxLogoWidth / logoImage.width;
+    const heightScale = maxLogoHeight / logoImage.height;
+    const scale = Math.min(widthScale, heightScale, 1);
+    const overlayWidth = Math.round(logoImage.width * scale);
+    const overlayHeight = Math.round(logoImage.height * scale);
+    const offsetX = canvas.width - overlayWidth - padding;
+    const offsetY = canvas.height - overlayHeight - padding;
+
+    ctx.drawImage(logoImage, offsetX, offsetY, overlayWidth, overlayHeight);
+
+    const mergedDataUrl = canvas.toDataURL('image/png');
+    const mergedBase64 = mergedDataUrl.split(',')[1] || base64Image;
+    return { base64: mergedBase64, dataUrl: mergedDataUrl };
+  } catch (err) {
+    console.error('Unable to overlay logo asset on generated image', err);
+    return { base64: base64Image, dataUrl: `data:image/png;base64,${base64Image}` };
+  }
+}
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [authInitialized, setAuthInitialized] = useState(false);
@@ -198,6 +282,10 @@ export default function App() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState('');
+
+  const [useGptImage, setUseGptImage] = useState(false);
+  const [preserveLogoOverlay, setPreserveLogoOverlay] = useState(false);
+  const [generationName, setGenerationName] = useState('');
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [activeView, setActiveView] = useState('home');
@@ -230,7 +318,7 @@ export default function App() {
       prompt: template.prompt ?? '',
       fields: Array.isArray(template.fields) ? template.fields : []
     };
-  }, [supabase]);
+  }, []);
 
   const fetchTemplates = useCallback(async () => {
     if (!user || !supabase) return;
@@ -292,7 +380,11 @@ export default function App() {
           templateId: entry.template_id,
           templateName: entry.template_name,
           createdAt: entry.created_at,
-          formValues: entry.form_values || {}
+          formValues: entry.form_values || {},
+          model: entry.model || 'dall-e-3',
+          logoAssetSource: entry.logo_asset_source || null,
+          generationName: entry.generation_name || entry.template_name || 'Untitled generation',
+          logoOverlay: Boolean(entry.logo_overlay)
         }))
       );
     }
@@ -422,9 +514,19 @@ export default function App() {
   const brandStyleSummary = useMemo(() => {
     return brandStyleSchema
       .map(field => {
-        const rawValue = brandStyle[field.key] ?? '';
-        if (!rawValue || rawValue.trim().length === 0) return null;
+        if (field.type === 'file') {
+          const upload = brandStyle[field.key];
+          if (!upload || typeof upload !== 'object' || !upload.dataUrl) return null;
+          const fileName = upload.name ? ` (${upload.name})` : '';
+          return {
+            label: 'Brand Logo Upload',
+            value: `Logo asset uploaded${fileName}`
+          };
+        }
+        const rawValue = brandStyle[field.key];
+        if (typeof rawValue !== 'string') return null;
         const trimmed = rawValue.trim();
+        if (trimmed.length === 0) return null;
         if (field.key === 'logoUrl') {
           return {
             label: 'Brand Logo Reference',
@@ -461,11 +563,21 @@ export default function App() {
       .join('\n\n');
   }, [selectedTemplate, templateFormValues, brandStyleSummary]);
 
+  const hasLogoAsset = useMemo(() => {
+    if (brandStyle.logoAsset && typeof brandStyle.logoAsset === 'object' && brandStyle.logoAsset.dataUrl) {
+      return true;
+    }
+    const logoUrl = typeof brandStyle.logoUrl === 'string' ? brandStyle.logoUrl.trim() : '';
+    return logoUrl.length > 0;
+  }, [brandStyle.logoAsset, brandStyle.logoUrl]);
+
   const isGenerateDisabled = useMemo(() => {
     if (!selectedTemplate) return true;
     const missingField = selectedTemplate.fields.some(field => !templateFormValues[field.key]?.trim());
-    return missingField || loading;
-  }, [selectedTemplate, templateFormValues, loading]);
+    if (missingField) return true;
+    if (!generationName.trim()) return true;
+    return loading;
+  }, [selectedTemplate, templateFormValues, loading, generationName]);
 
   function resetToTemplates() {
     setActiveView('templates');
@@ -473,6 +585,7 @@ export default function App() {
     setTemplateFormValues({});
     setImageResult(null);
     setGenerateError('');
+    setGenerationName('');
   }
 
   function goHome() {
@@ -500,11 +613,18 @@ export default function App() {
     setEditingTemplates({});
   }
 
+
   function handleSelectTemplate(templateId) {
     setSelectedTemplateId(templateId);
     setActiveView('generate');
     setImageResult(null);
     setGenerateError('');
+    const template = templates.find(entry => entry.id === templateId);
+    if (template) {
+      setGenerationName(template.name || '');
+    } else {
+      setGenerationName('');
+    }
   }
 
   function handleTemplateFormChange(key, value) {
@@ -529,7 +649,36 @@ export default function App() {
     setImageResult({ ...entry, url: entry.previewUrl || entry.url });
     setGenerateError('');
     setLoading(false);
+    setGenerationName(entry.generationName || entry.templateName || '');
+    setUseGptImage(entry.model === 'gpt-image-1');
+    setPreserveLogoOverlay(Boolean(entry.logoOverlay));
   }
+
+  const resolveBrandLogoAsset = useCallback(async () => {
+    const upload = brandStyle.logoAsset;
+    if (upload && typeof upload === 'object' && upload.dataUrl) {
+      return upload;
+    }
+    const logoUrl = typeof brandStyle.logoUrl === 'string' ? brandStyle.logoUrl.trim() : '';
+    if (!logoUrl) return null;
+    try {
+      const response = await fetch(logoUrl, { mode: 'cors' });
+      if (!response.ok) {
+        throw new Error(`Logo fetch failed with status ${response.status}`);
+      }
+      const blob = await response.blob();
+      const dataUrl = await blobToDataUrl(blob);
+      return {
+        name: logoUrl.split('/').pop() || 'brand-logo',
+        type: blob.type || 'image/png',
+        size: blob.size,
+        dataUrl
+      };
+    } catch (err) {
+      console.error('Unable to resolve brand logo reference', err);
+      return null;
+    }
+  }, [brandStyle.logoAsset, brandStyle.logoUrl]);
 
   function handleBrandStyleChange(key, value) {
     setBrandError('');
@@ -537,6 +686,18 @@ export default function App() {
       ...prev,
       [key]: value
     }));
+  }
+
+  function handleModelToggle(checked) {
+    setUseGptImage(Boolean(checked));
+  }
+
+  function handleLogoOverlayToggle(checked) {
+    setPreserveLogoOverlay(Boolean(checked) && hasLogoAsset);
+  }
+
+  function handleGenerationNameChange(value) {
+    setGenerationName(value);
   }
 
   async function handleBrandStyleSubmit() {
@@ -826,12 +987,19 @@ export default function App() {
     setGenerateError('');
     setImageResult(null);
     try {
-      const response = await generateImage({ prompt: promptPreview });
-      const base64Image = response?.data?.[0]?.b64_json || null;
+      const needsLogoAsset = (useGptImage || preserveLogoOverlay) && hasLogoAsset;
+      const logoAsset = needsLogoAsset ? await resolveBrandLogoAsset() : null;
+      const response = await generateImage({ prompt: promptPreview, logoAsset: useGptImage ? logoAsset : null, useGptImage });
+      let base64Image = response?.data?.[0]?.b64_json || null;
       if (!base64Image) {
         throw new Error('No image returned from the API.');
       }
+      if (preserveLogoOverlay && logoAsset?.dataUrl) {
+        const merged = await overlayLogoOntoImage(base64Image, logoAsset.dataUrl);
+        base64Image = merged.base64;
+      }
       const dataUrl = `data:image/png;base64,${base64Image}`;
+      const name = generationName.trim() || selectedTemplate.name || 'Untitled generation';
       const formValuesSnapshot = selectedTemplate.fields.reduce((acc, field) => {
         acc[field.key] = templateFormValues[field.key] ?? '';
         return acc;
@@ -872,8 +1040,14 @@ export default function App() {
         templateId: selectedTemplate.id,
         templateName: selectedTemplate.name,
         createdAt,
-        formValues: formValuesSnapshot
+        formValues: formValuesSnapshot,
+        model: useGptImage ? 'gpt-image-1' : 'dall-e-3',
+        generationName: name,
+        logoOverlay: Boolean(preserveLogoOverlay && logoAsset?.dataUrl)
       };
+      if (logoAsset?.dataUrl) {
+        historyEntry.logoAssetSource = logoAsset.name || 'brand-logo';
+      }
       if (supabase) {
         const { error: insertError } = await supabase.from('image_history').insert({
           id: entryId,
@@ -883,7 +1057,11 @@ export default function App() {
           prompt: promptPreview,
           form_values: formValuesSnapshot,
           image_url: storedImageUrl,
-          created_at: createdAt
+          created_at: createdAt,
+          model: historyEntry.model,
+          logo_asset_source: historyEntry.logoAssetSource ?? null,
+          generation_name: name,
+          logo_overlay: historyEntry.logoOverlay
         });
         if (insertError) {
           console.error('Failed to persist history', insertError);
@@ -1002,6 +1180,12 @@ export default function App() {
         onBack={resetToTemplates}
         onEditBrand={showBrandView}
         onOpenImage={handleOpenImage}
+        useGptImage={useGptImage}
+        onModelToggle={handleModelToggle}
+        generationName={generationName}
+        onGenerationNameChange={handleGenerationNameChange}
+        preserveLogoOverlay={preserveLogoOverlay}
+        onToggleLogoOverlay={handleLogoOverlayToggle}
       />
     );
   }

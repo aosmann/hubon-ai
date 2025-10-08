@@ -32,8 +32,7 @@ export default function HeaderNav({
   return (
     <aside className="side-nav">
       <div className="branding">
-        <span className="product-mark">Hubon AI</span>
-        <span className="product-subtitle">Powered by Kesewi</span>
+        <img src="/hubon-logo.svg" alt="Hubon AI" style={{ width: '80%', height: 'auto' }} />
       </div>
 
       {isAuthed && (
