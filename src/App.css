@@ -6,6 +6,7 @@
   --border-strong: #cbd5e1;
   --color-primary: #4cde4c;
   --color-primary-soft: #3ab43a;
+  --color-primary-dark: #0c820c;
   --color-text: #161616;
   --color-white: #f4f4f4;
   --color-black: #141414;
@@ -164,6 +165,15 @@ button {
   gap: 12px;
 }
 
+.side-nav-links span {
+  font-size: 16px;
+  font-weight: 500;
+}
+.side-nav-links svg {
+  width: 22px;
+  height: 22px;
+}
+
 .side-nav-grow {
   flex: 1;
 }
@@ -257,6 +267,8 @@ button.secondary {
   gap: 10px;
   background: #f2f2f200;
   color: var(--color-muted);
+  border: 0.5px solid #ffffff00;
+
 }
 
 .action-btn span {
@@ -266,18 +278,17 @@ button.secondary {
 /* Active (clicked) state */
 .action-btn.active,
 .action-btn[aria-pressed="true"] {
-  color: var(--color-primary-soft);
+  color: var(--color-primary-dark);
   background: var(--color-hover);
   cursor: default; /* optional */
-  font-weight: 600;
   border: 0.5px solid var(--color-primary-soft);
 }
 
 /* Hover applies ONLY to non-active buttons */
 .action-btn:not(.active):hover,
 .action-btn[aria-pressed="false"]:hover {
-  color: var(--color-text);
-  background: var(--color-hover);
+  background: #edf2f7;
+  border: 0.5px solid #ffffff00;
 }
 
 .action-btn.admin-active{
@@ -585,10 +596,7 @@ button.danger:hover {
 
 
 .template-card {
-  background: var(--bg-surface);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-card);
+  
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -597,6 +605,7 @@ button.danger:hover {
 }
 
 .template-image {
+  border-radius: var(--radius-sm);
   aspect-ratio: 4 / 3;
   background-size: contain;
   background-position: center;
@@ -625,7 +634,6 @@ button.danger:hover {
 
 .template-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 18px 32px -24px rgba(15, 23, 42, 0.45);
 }
 
 .template-open-hint {
@@ -649,6 +657,16 @@ button.danger:hover {
   align-items: center;
   justify-content: center;
   pointer-events: none;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .template-modal-backdrop {
@@ -657,6 +675,18 @@ button.danger:hover {
   background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(2px);
   pointer-events: auto;
+  animation: backdropFadeIn 0.25s ease-out;
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(2px);
+  }
 }
 
 .template-modal-content {
@@ -672,6 +702,18 @@ button.danger:hover {
   padding: 32px;
   overflow: auto;
   pointer-events: auto;
+  animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .template-modal-grid {
@@ -1488,7 +1530,7 @@ button.link-button:hover {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--color-primary);
+  background: var(--color-primary-soft);
   color: white;
   border: none;
   cursor: pointer;

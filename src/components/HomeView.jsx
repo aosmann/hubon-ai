@@ -95,7 +95,17 @@ export default function HomeView({
         <div className="history-grid">
           {history.map(entry => {
             const templateExists = templates.some(template => template.id === entry.templateId);
-            const timestampLabel = entry.createdAt ? new Date(entry.createdAt).toLocaleString() : '';
+            const timestampLabel = entry.createdAt
+              ? (() => {
+                  const date = new Date(entry.createdAt);
+                  const now = new Date();
+                  const options = { day: '2-digit', month: 'long' };
+                  if (date.getFullYear() !== now.getFullYear()) {
+                    options.year = 'numeric';
+                  }
+                  return date.toLocaleDateString('en-GB', options);
+                })()
+              : '';
             const generationLabel = entry.generationName || entry.templateName || 'Saved generation';
             return (
               <article
@@ -114,14 +124,12 @@ export default function HomeView({
                 <div className="history-details">
                   <div className="history-meta">
                     <span className="history-generation">{generationLabel}</span>
-                    {timestampLabel && <span className="history-time">{timestampLabel}</span>}
                   </div>
                   {entry.logoOverlay ? <span className="history-badge">Logo overlay</span> : null}
                   {entry.templateName ? (
                     <span className="history-template muted">Template: {entry.templateName}</span>
                   ) : null}
-
-                  <span className="history-open-hint">Tap to view details</span>
+                  {timestampLabel && <span className="history-time">{timestampLabel}</span>}                  
                 </div>
               </article>
             );
@@ -179,7 +187,17 @@ export default function HomeView({
                 <div className="history-meta-block">
                   <span className="history-meta-label">Generated</span>
                   <span className="history-meta-value">
-                    {activeEntry.createdAt ? new Date(activeEntry.createdAt).toLocaleString() : 'Unknown'}
+                    {activeEntry.createdAt
+                      ? (() => {
+                          const date = new Date(activeEntry.createdAt);
+                          const now = new Date();
+                          const options = { day: '2-digit', month: 'long' };
+                          if (date.getFullYear() !== now.getFullYear()) {
+                            options.year = 'numeric';
+                          }
+                          return date.toLocaleDateString('en-GB', options);
+                        })()
+                      : 'Unknown'}
                   </span>
                 </div>
                 {activeEntry.model ? (
