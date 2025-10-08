@@ -1015,6 +1015,7 @@ export default function App() {
         try {
           const blob = base64ToBlob(base64Image);
           const filePath = `${user.id}/${entryId}.png`;
+          console.log('Uploading image to bucket:', imageBucketName, 'path:', filePath);
           const { error: uploadError } = await supabase.storage
             .from(imageBucketName)
             .upload(filePath, blob, {
@@ -1023,15 +1024,18 @@ export default function App() {
               upsert: true
             });
           if (uploadError) {
-            console.error('Failed to upload image to Supabase storage', uploadError);
+            console.error('Failed to upload image to Supabase storage:', uploadError);
+            setGlobalMessage(`Storage upload failed: ${uploadError.message}`);
           } else {
             const { data: publicUrlData } = supabase.storage.from(imageBucketName).getPublicUrl(filePath);
             if (publicUrlData?.publicUrl) {
               storedImageUrl = publicUrlData.publicUrl;
+              console.log('Image uploaded successfully:', storedImageUrl);
             }
           }
         } catch (uploadErr) {
-          console.error('Unexpected error uploading image to Supabase storage', uploadErr);
+          console.error('Unexpected error uploading image to Supabase storage:', uploadErr);
+          setGlobalMessage(`Storage error: ${uploadErr.message}`);
         }
       }
 
@@ -1052,7 +1056,8 @@ export default function App() {
         historyEntry.logoAssetSource = logoAsset.name || 'brand-logo';
       }
       if (supabase) {
-        const { error: insertError } = await supabase.from('image_history').insert({
+        console.log('Saving to database, table: image_history');
+        const historyRecord = {
           id: entryId,
           user_id: user.id,
           template_id: selectedTemplate.id,
@@ -1065,9 +1070,15 @@ export default function App() {
           logo_asset_source: historyEntry.logoAssetSource ?? null,
           generation_name: name,
           logo_overlay: historyEntry.logoOverlay
-        });
+        };
+        console.log('History record to insert:', historyRecord);
+        const { error: insertError } = await supabase.from('image_history').insert(historyRecord);
         if (insertError) {
-          console.error('Failed to persist history', insertError);
+          console.error('Failed to persist history to database:', insertError);
+          setGlobalMessage(`Database error: ${insertError.message}`);
+        } else {
+          console.log('Successfully saved to database');
+          setGlobalMessage('Image generated and saved successfully!');
         }
       }
       setHistory(prev => {
