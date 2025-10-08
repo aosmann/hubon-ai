@@ -383,9 +383,7 @@ export default function App() {
           createdAt: entry.created_at,
           formValues: entry.form_values || {},
           model: entry.model || 'dall-e-3',
-          logoAssetSource: entry.logo_asset_source || null,
-          generationName: entry.generation_name || entry.template_name || 'Untitled generation',
-          logoOverlay: Boolean(entry.logo_overlay)
+          generationName: entry.generation_name || entry.template_name || 'Untitled generation'
         }))
       );
     }
@@ -654,7 +652,7 @@ export default function App() {
     setLoading(false);
     setGenerationName(entry.generationName || entry.templateName || '');
     setUseGptImage(entry.model === 'gpt-image-1');
-    setPreserveLogoOverlay(Boolean(entry.logoOverlay));
+    setPreserveLogoOverlay(false);
   }
 
   const resolveBrandLogoAsset = useCallback(async () => {
@@ -1049,12 +1047,8 @@ export default function App() {
         createdAt,
         formValues: formValuesSnapshot,
         model: useGptImage ? 'gpt-image-1' : 'dall-e-3',
-        generationName: name,
-        logoOverlay: Boolean(preserveLogoOverlay && logoAsset?.dataUrl)
+        generationName: name
       };
-      if (logoAsset?.dataUrl) {
-        historyEntry.logoAssetSource = logoAsset.name || 'brand-logo';
-      }
       if (supabase) {
         console.log('Saving to database, table: image_history');
         const historyRecord = {
@@ -1067,9 +1061,7 @@ export default function App() {
           image_url: storedImageUrl,
           created_at: createdAt,
           model: historyEntry.model,
-          logo_asset_source: historyEntry.logoAssetSource ?? null,
-          generation_name: name,
-          logo_overlay: historyEntry.logoOverlay
+          generation_name: name
         };
         console.log('History record to insert:', historyRecord);
         const { error: insertError } = await supabase.from('image_history').insert(historyRecord);

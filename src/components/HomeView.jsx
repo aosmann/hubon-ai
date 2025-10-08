@@ -125,11 +125,10 @@ export default function HomeView({
                   <div className="history-meta">
                     <span className="history-generation">{generationLabel}</span>
                   </div>
-                  {entry.logoOverlay ? <span className="history-badge">Logo overlay</span> : null}
                   {entry.templateName ? (
                     <span className="history-template muted">Template: {entry.templateName}</span>
                   ) : null}
-                  {timestampLabel && <span className="history-time">{timestampLabel}</span>}                  
+                  {timestampLabel && <span className="history-time">{timestampLabel}</span>}
                 </div>
               </article>
             );
@@ -205,15 +204,7 @@ export default function HomeView({
                     <span className="history-meta-label">Model</span>
                     <span className="history-meta-value">
                       {activeEntry.model === 'gpt-image-1' ? 'GPT Image' : 'DALL·E 3'}
-                      {activeEntry.logoAssetSource ? ` · Logo source: ${activeEntry.logoAssetSource}` : ''}
-                      {activeEntry.logoOverlay ? ' · Original logo overlay' : ''}
                     </span>
-                  </div>
-                ) : null}
-                {activeEntry.logoOverlay ? (
-                  <div className="history-meta-block">
-                    <span className="history-meta-label">Logo overlay</span>
-                    <span className="history-meta-value">Original brand logo applied</span>
                   </div>
                 ) : null}
                 <div className="history-meta-block prompt-block">

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Pencil, Trash2, X } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Pencil, Trash2, X, Upload, Image as ImageIcon } from 'lucide-react';
 
 export default function TemplatesView({
   templates,
@@ -21,6 +21,8 @@ export default function TemplatesView({
   onSaveTemplateEdit
 }) {
   const [activeTemplateId, setActiveTemplateId] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
 
   const handleOpenTemplate = templateId => {
     setActiveTemplateId(templateId);
@@ -31,6 +33,48 @@ export default function TemplatesView({
       onCancelTemplateEdit(activeTemplateId);
     }
     setActiveTemplateId(null);
+  };
+
+  const handleImageFile = (file, templateId) => {
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        onTemplateMetaChange(templateId, 'image', e.target?.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e, templateId) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    handleImageFile(file, templateId);
+  };
+
+  const handlePaste = (e, templateId) => {
+    const items = e.clipboardData?.items;
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          const file = items[i].getAsFile();
+          if (file) {
+            handleImageFile(file, templateId);
+          }
+          break;
+        }
+      }
+    }
   };
 
   const modalTemplate = activeTemplateId ? templates.find(template => template.id === activeTemplateId) : null;
@@ -173,32 +217,47 @@ export default function TemplatesView({
                           onChange={event => onTemplateMetaChange(modalDraft.id, 'description', event.target.value)}
                         />
                       </label>
-                      <label>
-                        <span>Preview Image</span>
+                      <div>
+                        <span style={{ display: 'block', marginBottom: '6px', fontSize: '0.95rem', color: 'var(--color-muted)' }}>
+                          Preview Image
+                        </span>
+                        <div
+                          className={`image-upload-area ${isDragging ? 'dragging' : ''}`}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => handleDrop(e, modalDraft.id)}
+                          onPaste={(e) => handlePaste(e, modalDraft.id)}
+                          onClick={() => fileInputRef.current?.click()}
+                          tabIndex={0}
+                          role="button"
+                        >
+                          {modalDraft.image ? (
+                            <div className="image-upload-preview">
+                              <img src={modalDraft.image} alt="Preview" />
+                              <div className="image-upload-overlay">
+                                <Upload size={20} />
+                                <span>Click, drag, or paste to replace</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="image-upload-placeholder">
+                              <ImageIcon size={32} strokeWidth={1.5} />
+                              <p>Click to upload, drag & drop, or paste an image</p>
+                              <span className="muted">PNG, JPG, GIF up to 10MB</span>
+                            </div>
+                          )}
+                        </div>
                         <input
+                          ref={fileInputRef}
                           type="file"
                           accept="image/*"
-                          onChange={event => {
+                          style={{ display: 'none' }}
+                          onChange={(event) => {
                             const file = event.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onload = e => {
-                                onTemplateMetaChange(modalDraft.id, 'image', e.target?.result);
-                              };
-                              reader.readAsDataURL(file);
-                            }
+                            if (file) handleImageFile(file, modalDraft.id);
                           }}
                         />
-                        {modalDraft.image && (
-                          <div style={{ marginTop: '8px' }}>
-                            <img
-                              src={modalDraft.image}
-                              alt="Preview"
-                              style={{ maxWidth: '200px', maxHeight: '120px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}
-                            />
-                          </div>
-                        )}
-                      </label>
+                      </div>
                       <label>
                         <span>Base Prompt</span>
                         <textarea
