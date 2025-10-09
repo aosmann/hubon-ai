@@ -1,6 +1,3 @@
-// Utility to call OpenAI's GPT-4o/gpt-image-1 API for image generation
-// Set your API key in .env as VITE_OPENAI_API_KEY
-
 function dataUrlToBlob(dataUrl, fallbackType = 'image/png') {
   if (typeof dataUrl !== 'string' || !dataUrl.includes(',')) return null;
   const [meta, base64Data] = dataUrl.split(',');
@@ -16,9 +13,15 @@ function dataUrlToBlob(dataUrl, fallbackType = 'image/png') {
   return new Blob([bytes], { type: mimeType });
 }
 
-export async function generateImage({ prompt, logoAsset = null, useGptImage = false }) {
+const DALLE_SIZE_OPTIONS = new Set(['1024x1024', '1024x1536', '1536x1024']);
+const GPT_IMAGE_SIZE_OPTIONS = new Set(['1024x1024', '1024x1536', '1536x1024', 'auto']);
+
+export async function generateImage({ prompt, logoAsset = null, useGptImage = false, size = '1024x1024' }) {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   if (!apiKey) throw new Error('OpenAI API key not set');
+  const requestedSize = typeof size === 'string' ? size : '1024x1024';
+  const allowedSizes = useGptImage ? GPT_IMAGE_SIZE_OPTIONS : DALLE_SIZE_OPTIONS;
+  const normalizedSize = allowedSizes.has(requestedSize) ? requestedSize : '1024x1024';
 
   if (useGptImage && logoAsset?.dataUrl) {
     const blob = dataUrlToBlob(logoAsset.dataUrl, logoAsset.type || 'image/png');
@@ -29,6 +32,7 @@ export async function generateImage({ prompt, logoAsset = null, useGptImage = fa
     const formData = new FormData();
     formData.append('model', 'gpt-image-1');
     formData.append('prompt', prompt);
+    formData.append('size', normalizedSize === 'auto' ? '1024x1024' : normalizedSize);
     const filename = logoAsset.name || 'brand-logo.png';
     formData.append('image[]', blob, filename);
 
@@ -57,10 +61,13 @@ export async function generateImage({ prompt, logoAsset = null, useGptImage = fa
     model: useGptImage ? 'gpt-image-1' : 'dall-e-3',
     prompt,
     n: 1,
-    size: '1024x1024',
-  ...(useGptImage ? { quality: 'medium' } : { quality: 'standard' }),
-    response_format: 'b64_json'
+    size: normalizedSize,
+    ...(useGptImage ? { quality: 'medium' } : { quality: 'standard' })
   };
+
+  if (!useGptImage) {
+    body.response_format = 'b64_json';
+  }
 
   const response = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',

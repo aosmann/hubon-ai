@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function GenerateView({
@@ -18,11 +18,47 @@ export default function GenerateView({
   useGptImage,
   onModelToggle,
   hasLogoAsset,
+  aspectRatioOptions,
+  selectedAspectRatio,
+  onAspectRatioChange,
   generationName,
   onGenerationNameChange
 }) {
   const [showBrandStyles, setShowBrandStyles] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
+
+  const ratioOptions = useMemo(() => {
+    if (Array.isArray(aspectRatioOptions) && aspectRatioOptions.length > 0) {
+      return aspectRatioOptions;
+    }
+    return [{ value: '512x512', label: 'Square (512x512)', width: 1, height: 1 }];
+  }, [aspectRatioOptions]);
+
+  const activeRatio = useMemo(
+    () => ratioOptions.find(option => option.value === selectedAspectRatio) || ratioOptions[0],
+    [ratioOptions, selectedAspectRatio]
+  );
+
+  const ratioValue = activeRatio?.value || ratioOptions[0].value;
+
+  const ratioPreviewStyle = useMemo(() => {
+    const base = 44;
+    const width = typeof activeRatio?.width === 'number' ? activeRatio.width : 1;
+    const height = typeof activeRatio?.height === 'number' ? activeRatio.height : 1;
+    const maxSide = Math.max(width, height, 1);
+    const visualWidth = Math.max((width / maxSide) * base, 12);
+    const visualHeight = Math.max((height / maxSide) * base, 12);
+    return {
+      width: `${visualWidth}px`,
+      height: `${visualHeight}px`
+    };
+  }, [activeRatio]);
+
+  function handleRatioChange(event) {
+    if (typeof onAspectRatioChange === 'function') {
+      onAspectRatioChange(event.target.value);
+    }
+  }
 
   if (!selectedTemplate) return null;
 
@@ -54,6 +90,20 @@ export default function GenerateView({
               value={generationName}
               onChange={event => onGenerationNameChange(event.target.value)}
             />
+          </label>
+          <label className="aspect-ratio-field">
+            <span>Aspect ratio</span>
+            <div className="aspect-ratio-control">
+              <span className="aspect-ratio-icon" style={ratioPreviewStyle} aria-hidden="true" />
+              <select value={ratioValue} onChange={handleRatioChange}>
+                {ratioOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <span className="muted aspect-ratio-hint">Larger ratios use more credits.</span>
           </label>
           <div className="form-grid">
             {selectedTemplate.fields.map(field => (

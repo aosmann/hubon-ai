@@ -1159,6 +1159,44 @@ button.link-button:hover {
   gap: 8px;
 }
 
+.aspect-ratio-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aspect-ratio-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.aspect-ratio-control select {
+  flex: 0 0 auto;
+  min-width: 200px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: #ffffff;
+  color: var(--color-text);
+}
+
+.aspect-ratio-control select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(76, 222, 76, 0.2);
+}
+
+.aspect-ratio-icon {
+  flex: 0 0 auto;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.18), rgba(148, 163, 184, 0.06));
+}
+
+.aspect-ratio-hint {
+  font-size: 0.8rem;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

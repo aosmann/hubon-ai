@@ -18,6 +18,12 @@ const imageBucketName = import.meta.env.VITE_SUPABASE_IMAGE_BUCKET || 'generated
 
 const BRAND_FONT_OPTIONS = ['Poppins', 'Nohemi', 'Inter', 'Times New Roman'];
 
+const ASPECT_RATIO_OPTIONS = [
+  { value: '1024x1024', label: 'Square - 1:1 (1024x1024)', width: 1, height: 1 },
+  { value: '1024x1536', label: 'Portrait - 2:3 (1024x1536)', width: 2, height: 3 },
+  { value: '1536x1024', label: 'Landscape - 3:2 (1536x1024)', width: 3, height: 2 }
+];
+
 const defaultTemplates = [
   {
     id: 'social_launch',
@@ -285,6 +291,7 @@ export default function App() {
   const [historyError, setHistoryError] = useState('');
 
   const [useGptImage, setUseGptImage] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIO_OPTIONS[0].value);
   const [preserveLogoOverlay, setPreserveLogoOverlay] = useState(false);
   const [generationName, setGenerationName] = useState('');
   const [profile, setProfile] = useState(null);
@@ -383,7 +390,8 @@ export default function App() {
           createdAt: entry.created_at,
           formValues: entry.form_values || {},
           model: entry.model || 'dall-e-3',
-          generationName: entry.generation_name || entry.template_name || 'Untitled generation'
+          generationName: entry.generation_name || entry.template_name || 'Untitled generation',
+          size: entry.image_size || entry.size || ASPECT_RATIO_OPTIONS[0].value
         }))
       );
     }
@@ -587,6 +595,7 @@ export default function App() {
     setImageResult(null);
     setGenerateError('');
     setGenerationName('');
+    handleAspectRatioChange(ASPECT_RATIO_OPTIONS[0].value);
   }
 
   function goHome() {
@@ -652,6 +661,7 @@ export default function App() {
     setLoading(false);
     setGenerationName(entry.generationName || entry.templateName || '');
     setUseGptImage(entry.model === 'gpt-image-1');
+    handleAspectRatioChange(entry.size || ASPECT_RATIO_OPTIONS[0].value);
     setPreserveLogoOverlay(false);
   }
 
@@ -695,6 +705,11 @@ export default function App() {
 
   function handleLogoOverlayToggle(checked) {
     setPreserveLogoOverlay(Boolean(checked) && hasLogoAsset);
+  }
+
+  function handleAspectRatioChange(value) {
+    const next = ASPECT_RATIO_OPTIONS.find(option => option.value === value);
+    setAspectRatio(next ? next.value : ASPECT_RATIO_OPTIONS[0].value);
   }
 
   function handleGenerationNameChange(value) {
@@ -990,7 +1005,12 @@ export default function App() {
     try {
       const needsLogoAsset = (useGptImage || preserveLogoOverlay) && hasLogoAsset;
       const logoAsset = needsLogoAsset ? await resolveBrandLogoAsset() : null;
-      const response = await generateImage({ prompt: promptPreview, logoAsset: useGptImage ? logoAsset : null, useGptImage });
+      const response = await generateImage({
+        prompt: promptPreview,
+        logoAsset: useGptImage ? logoAsset : null,
+        useGptImage,
+        size: aspectRatio
+      });
       let base64Image = response?.data?.[0]?.b64_json || null;
       if (!base64Image) {
         throw new Error('No image returned from the API.');
@@ -1047,7 +1067,8 @@ export default function App() {
         createdAt,
         formValues: formValuesSnapshot,
         model: useGptImage ? 'gpt-image-1' : 'dall-e-3',
-        generationName: name
+        generationName: name,
+        size: aspectRatio
       };
       if (supabase) {
         console.log('Saving to database, table: image_history');
@@ -1188,6 +1209,10 @@ export default function App() {
         onOpenImage={handleOpenImage}
         useGptImage={useGptImage}
         onModelToggle={handleModelToggle}
+        hasLogoAsset={hasLogoAsset}
+        aspectRatioOptions={ASPECT_RATIO_OPTIONS}
+        selectedAspectRatio={aspectRatio}
+        onAspectRatioChange={handleAspectRatioChange}
         generationName={generationName}
         onGenerationNameChange={handleGenerationNameChange}
         preserveLogoOverlay={preserveLogoOverlay}
