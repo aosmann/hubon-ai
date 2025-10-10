@@ -1,22 +1,76 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-export default function AuthView({ mode, onModeChange, onSubmit, formValues, onChange, error, loading }) {
+export default function AuthView({
+  mode,
+  onModeChange,
+  onSubmit,
+  formValues,
+  onChange,
+  error,
+  loading,
+  onBack
+}) {
   const [showPassword, setShowPassword] = useState(false);
   const [requestForm, setRequestForm] = useState({ name: '', email: '', hasBrandGuideline: '' });
   const [requestSubmitted, setRequestSubmitted] = useState(false);
+  const [requestLoading, setRequestLoading] = useState(false);
+  const [requestError, setRequestError] = useState('');
   const isRequestMode = mode === 'request_account';
 
-  const handleRequestSubmit = (e) => {
-    e.preventDefault();
-    // Here you can add logic to send the request to your backend/email
-    console.log('Account request submitted:', requestForm);
-    setRequestSubmitted(true);
-  };
+  const REQUEST_ENDPOINT = 'https://formsubmit.co/ajax/contact@kesewi.com';
+
+  useEffect(() => {
+    if (!isRequestMode) {
+      setRequestError('');
+      setRequestLoading(false);
+      setRequestSubmitted(false);
+    }
+  }, [isRequestMode]);
+
+  async function handleRequestSubmit(event) {
+    event.preventDefault();
+    if (requestLoading) return;
+    setRequestError('');
+    setRequestLoading(true);
+    try {
+      const payload = {
+        name: requestForm.name,
+        email: requestForm.email,
+        brand_guidelines: requestForm.hasBrandGuideline,
+        _subject: 'Hubon AI account request',
+        message: `Brand guidelines provided: ${requestForm.hasBrandGuideline}`
+      };
+      const response = await fetch(REQUEST_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json().catch(() => ({}));
+      const success = result.success === 'true' || result.success === true;
+      if (!response.ok || !success) {
+        throw new Error(result.message || 'Unable to submit your request. Please try again.');
+      }
+      setRequestSubmitted(true);
+      setRequestForm({ name: '', email: '', hasBrandGuideline: '' });
+    } catch (err) {
+      setRequestError(err instanceof Error ? err.message : 'Failed to submit your request.');
+    } finally {
+      setRequestLoading(false);
+    }
+  }
 
   if (requestSubmitted) {
     return (
       <div className="auth-wrap">
         <div className="auth-card">
+          {typeof onBack === 'function' && (
+            <button type="button" className="auth-back-link" onClick={onBack}>
+              ← Back to Hubon AI
+            </button>
+          )}
           <header className="auth-header">
             <h1>Request Received</h1>
             <p className="muted">
@@ -44,6 +98,11 @@ export default function AuthView({ mode, onModeChange, onSubmit, formValues, onC
     return (
       <div className="auth-wrap">
         <div className="auth-card">
+          {typeof onBack === 'function' && (
+            <button type="button" className="auth-back-link" onClick={onBack}>
+              ← Back to Hubon AI
+            </button>
+          )}
           <header className="auth-header">
             <h1>Request an Account</h1>
             <p className="muted">Fill in your details and we'll get back to you shortly to set up your account.</p>
@@ -84,9 +143,15 @@ export default function AuthView({ mode, onModeChange, onSubmit, formValues, onC
               </select>
             </label>
 
+            {requestError && (
+              <div className="banner banner-error" role="alert">
+                {requestError}
+              </div>
+            )}
+
             <div className="form-actions auth-actions">
-              <button type="submit" className="primary">
-                Submit Request
+              <button type="submit" className="primary" disabled={requestLoading}>
+                {requestLoading ? 'Submitting…' : 'Submit Request'}
               </button>
               <button
                 type="button"
@@ -106,6 +171,11 @@ export default function AuthView({ mode, onModeChange, onSubmit, formValues, onC
     <>
       <div className="auth-wrap">
         <div className="auth-card">
+          {typeof onBack === 'function' && (
+            <button type="button" className="auth-back-link" onClick={onBack}>
+              ← Back to Hubon AI
+            </button>
+          )}
           <header className="auth-header">
             <h1>Welcome back</h1>
             <p className="muted">Sign in to sync your brand settings, templates, and image history.</p>

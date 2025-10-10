@@ -6,6 +6,7 @@ import TemplatesView from './components/TemplatesView.jsx';
 import BrandView from './components/BrandView.jsx';
 import GenerateView from './components/GenerateView.jsx';
 import AuthView from './components/AuthView.jsx';
+import LandingPage from './components/LandingPage.jsx';
 import ChatBot from './components/ChatBot.jsx';
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 import './App.css';
@@ -291,6 +292,7 @@ export default function App() {
   const [historyError, setHistoryError] = useState('');
 
   const [useGptImage, setUseGptImage] = useState(false);
+  const [showAuthView, setShowAuthView] = useState(false);
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIO_OPTIONS[0].value);
   const [preserveLogoOverlay, setPreserveLogoOverlay] = useState(false);
   const [generationName, setGenerationName] = useState('');
@@ -439,6 +441,12 @@ export default function App() {
     const timer = setTimeout(() => setGlobalMessage(''), 4000);
     return () => clearTimeout(timer);
   }, [globalMessage]);
+
+  useEffect(() => {
+    if (user) {
+      setShowAuthView(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -649,6 +657,19 @@ export default function App() {
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 
+  function openAuthView(mode = 'sign_in') {
+    setAuthMode(mode);
+    setAuthError('');
+    setShowAuthView(true);
+  }
+
+  function closeAuthView() {
+    setShowAuthView(false);
+    setAuthMode('sign_in');
+    setAuthError('');
+    setAuthForm({ email: '', password: '' });
+  }
+
   function handleReuseHistoryEntry(entry) {
     if (!entry) return;
     const templateExists = templates.some(template => template.id === entry.templateId);
@@ -788,6 +809,7 @@ export default function App() {
       setGlobalMessage('Sign out failed. Please try again.');
     } else {
       setGlobalMessage('Signed out.');
+      setShowAuthView(false);
     }
   }
 
@@ -1139,18 +1161,29 @@ export default function App() {
       </div>
     );
   } else if (!user) {
-    viewClassName = 'auth-view';
-    viewContent = (
-      <AuthView
-        mode={authMode}
-        onModeChange={handleAuthModeChange}
-        onSubmit={handleAuthSubmit}
-        formValues={authForm}
-        onChange={handleAuthFormChange}
-        error={authError}
-        loading={authLoading}
-      />
-    );
+    if (showAuthView) {
+      viewClassName = 'auth-view';
+      viewContent = (
+        <AuthView
+          mode={authMode}
+          onModeChange={handleAuthModeChange}
+          onSubmit={handleAuthSubmit}
+          formValues={authForm}
+          onChange={handleAuthFormChange}
+          error={authError}
+          loading={authLoading}
+          onBack={closeAuthView}
+        />
+      );
+    } else {
+      viewClassName = 'landing-view';
+      viewContent = (
+        <LandingPage
+          onSignIn={() => openAuthView('sign_in')}
+          onRequestAccess={() => openAuthView('request_account')}
+        />
+      );
+    }
   } else if (activeView === 'home') {
     viewClassName = 'home-view';
     viewContent = homeViewComponent;
@@ -1226,8 +1259,11 @@ export default function App() {
     viewContent = homeViewComponent;
   }
 
+  const isLandingView = viewClassName === 'landing-view';
+  const shellClassName = !user ? (showAuthView ? 'app-shell-fullscreen' : 'landing-shell') : '';
+
   return (
-    <div className={`app-shell ${!user ? 'app-shell-fullscreen' : ''}`}>
+    <div className={`app-shell ${shellClassName}`}>
       {configError || !authInitialized || !user ? null : (
         <HeaderNav
           activeView={activeView}
@@ -1244,8 +1280,9 @@ export default function App() {
       <div className="app-content">
         {globalMessage && <div className="app-banner success">{globalMessage}</div>}
         {configError && <div className="app-banner error">{configError}</div>}
-        <main className="page-area">
-          {viewContent && <ViewLayout className={viewClassName}>{viewContent}</ViewLayout>}
+        <main className={`page-area ${isLandingView ? 'page-area-landing' : ''}`}>
+          {viewContent &&
+            (isLandingView ? viewContent : <ViewLayout className={viewClassName}>{viewContent}</ViewLayout>)}
         </main>
       </div>
       {user && <ChatBot />}
