@@ -549,6 +549,28 @@ export default function App() {
   }, [authInitialized, editingTemplates, fetchBrandStyle, fetchHistory, fetchProfile, fetchTemplates, isSupabaseConfigured, supabase, user]);
 
   useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+
+    const autoResize = event => {
+      const target = event.target;
+      if (target && target.tagName === 'TEXTAREA') {
+        target.style.height = 'auto';
+        target.style.height = `${target.scrollHeight}px`;
+      }
+    };
+
+    document.addEventListener('input', autoResize);
+    document.querySelectorAll('textarea').forEach(node => {
+      node.style.height = 'auto';
+      node.style.height = `${node.scrollHeight}px`;
+    });
+
+    return () => {
+      document.removeEventListener('input', autoResize);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!selectedTemplate) return;
     setTemplateFormValues(prev => {
       const next = {};

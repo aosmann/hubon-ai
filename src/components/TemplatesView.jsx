@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+
+function autoResizeTextarea(node) {
+  if (!node) return;
+  node.style.height = 'auto';
+  node.style.height = `${node.scrollHeight}px`;
+}
 import { Pencil, Trash2, X, Upload, Image as ImageIcon } from 'lucide-react';
 
 export default function TemplatesView({
