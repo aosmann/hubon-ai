@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Aktifoa:wght@400;700&display=swap');
+
 :root {
   color-scheme: light;
   --bg-page: #f7f8fa;
@@ -87,8 +89,8 @@ body.modal-open {
 }
 
 .home-index {
-  margin: auto;
-  
+
+  width: 100vw;
 }
 
 button {
@@ -169,22 +171,22 @@ button {
   min-height: 100vh;
   width: 100%;
   display: flex;
-  --bg-page: #030915;
-  --bg-surface: #041120;
-  --bg-surface-elevated: #0a1b33;
-  --bg-panel: rgba(15, 25, 45, 0.8);
-  --bg-panel-strong: rgba(21, 33, 57, 0.9);
-  --bg-popover: rgba(6, 17, 33, 0.96);
-  --bg-popover-hover: rgba(29, 44, 70, 0.82);
-  --bg-control: rgba(46, 60, 90, 0.32);
-  --bg-control-hover: rgba(71, 87, 122, 0.42);
-  --border-subtle: rgba(56, 79, 120, 0.35);
-  --border-strong: rgba(90, 120, 168, 0.55);
-  --color-text: #f8fafc;
-  --color-muted: rgba(226, 232, 240, 0.7);
-  --color-primary: #34d399;
-  --color-primary-soft: #22c55e;
-  --color-primary-dark: #0f766e;
+  --bg-page: #000000;
+  --bg-surface: #000000;
+  --bg-surface-elevated: #0c0c0c;
+  --bg-panel: rgba(14, 14, 14, 0.92);
+  --bg-panel-strong: rgba(22, 22, 22, 0.94);
+  --bg-popover: rgba(10, 10, 10, 0.98);
+  --bg-popover-hover: rgba(32, 32, 32, 0.9);
+  --bg-control: rgba(255, 255, 255, 0.18);
+  --bg-control-hover: rgba(255, 255, 255, 0.28);
+  --border-subtle: rgba(255, 255, 255, 0.16);
+  --border-strong: rgba(255, 255, 255, 0.32);
+  --color-text: #ffffff;
+  --color-muted: rgba(255, 255, 255, 0.68);
+  --color-primary: #00dc00;
+  --color-primary-soft: #00c600;
+  --color-primary-dark: #009900;
   background: var(--bg-surface);
   color: var(--color-text);
 }
@@ -212,208 +214,229 @@ button {
 
 .landing-hero {
   position: relative;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: clamp(32px, 6vw, 48px);
-  padding: clamp(24px, 6vw, 48px);
   min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(32px, 6vw, 96px) 24px;
+  background: #000000 url('/public/hero-bg.jpg') center / cover no-repeat;
+  color: #ffffff;
+  text-align: center;
   overflow: hidden;
 }
 
-.landing-hero__brand {
+.landing-hero__pattern {
   position: absolute;
-  top: clamp(16px, 4vw, 32px);
-  left: clamp(16px, 4vw, 32px);
-  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.landing-hero__brand img {
-  height: clamp(28px, 5vw, 40px);
-  width: auto;
-  display: block;
-  transition: filter 0.2s ease;
+.landing-hero__pattern {
+  background-image:
+    linear-gradient(90deg, rgba(0, 200, 0, 0.12) 1px, transparent 1px),
+    linear-gradient(rgba(0, 200, 0, 0.1) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mix-blend-mode: screen;
+  opacity: 0.2;
 }
 
-.landing-hero__section {
-  position: relative;
-  z-index: 2;
-  margin: 0 auto;
-  max-width: 720px;
-  width: min(100%, 680px);
-  display: grid;
-  gap: clamp(16px, 3vw, 28px);
-  text-align: center;
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 200, 0, 0.14) 0, rgba(0, 200, 0, 0.14) 1px, transparent 1px, transparent 48px),
+    repeating-linear-gradient(0deg, rgba(0, 200, 0, 0.12) 0, rgba(0, 200, 0, 0.12) 1px, transparent 1px, transparent 48px);
+  mix-blend-mode: screen;
+  opacity: 0.18;
+  z-index: 0;
 }
 
-.landing-hero__badge {
-  justify-self: center;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.75);
-  font-size: 0.76rem;
-  font-weight: 600;
-  line-height: 1;
-  color: var(--color-muted);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 12px 24px -20px rgba(15, 23, 42, 0.25);
-}
 
-.landing-hero__badge-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: #00dc00;
-  display: inline-block;
-}
-
-.landing-hero__heading {
-  margin: 0;
-  font-size: clamp(2.8rem, 3.4rem + 1vw, 4.5rem);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  font-weight: 700;
-  color: var(--color-text);
-  display: grid;
-  gap: clamp(4px, 1vw, 12px);
-}
-
-.landing-hero__line-break {
-  display: block;
-}
-
-.landing-hero__copy {
-  margin: 0 auto;
-  max-width: 600px;
-  color: var(--color-muted);
-  font-size: clamp(1rem, 1.15rem + 0.3vw, 1.3rem);
-  line-height: 1.6;
-}
-
-.landing-hero__actions {
+.landing-hero__nav {
+  position: absolute;
+  top: clamp(40px, 12vw, 92px);
+  left: 0;
+  right: 0;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
+  padding: 0 clamp(24px, 6vw, 64px);
+  z-index: 2;
+  filter: invert();
+}
+
+.landing-hero__nav-logo img {
+  width: clamp(110px, 14vw, 160px);
+  display: block;
+}
+
+
+@media (max-width: 640px) {
+  .landing-hero__nav {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.landing-hero__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(80px, 10vw, 120px);
+}
+
+.landing-hero__logo img {
+  filter: invert();
+  display: block;
+  width: clamp(130px, 18vw, 220px);
+}
+
+.landing-hero__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 16px;
 }
 
-.landing-hero__button {
-  padding: 14px 32px;
-  border-radius: 999px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+.landing-hero__title {
+  margin: 0;
+  font-size: clamp(3rem, 4.8vw, 5.6rem);
+  line-height: 1.06;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.landing-hero__button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(0, 220, 0, 0.24);
+.landing-hero__subtitle {
+  margin: 0;
+  font-family: 'Aktifoa', 'Aktifo A', 'Archia', 'Inter', sans-serif;
+  font-size: clamp(1rem, 2.4vw, 1.4rem);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.78);
 }
 
-.landing-hero__button--primary {
-  background: #00dc00;
-  color: #0b1a0b;
-  box-shadow: 0 18px 42px -24px rgba(0, 220, 0, 0.7);
-}
-
-.landing-hero__button--primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 24px 48px -22px rgba(0, 220, 0, 0.65);
-}
-
-.landing-hero__button--secondary {
-  background: var(--bg-surface);
-  color: var(--color-text);
-  border-color: var(--border-subtle);
-  box-shadow: 0 14px 32px -28px rgba(15, 23, 42, 0.3);
-}
-
-.landing-hero__button--secondary:hover {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: var(--border-strong);
-}
-
-.landing-hero__chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  font-size: 0.78rem;
-  color: var(--color-muted);
-}
-
-.landing-hero__chips span {
-  border: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 999px;
-  padding: 8px 16px;
-  backdrop-filter: blur(6px);
-}
-
-.landing-hero__radial,
-.landing-hero__grid,
-.landing-hero__arc {
+.landing-hero__actions {
+  flex-direction: column;
+  gap: 18px;
   position: absolute;
-  inset: 0;
-  z-index: 1;
+  bottom: clamp(20px, 5vw, 52px);
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 clamp(24px, 6vw, 64px);
+  z-index: 2;
+}
+
+/* Centered absolute element that sits behind other content */
+.center-behind {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;           /* behind */
+  pointer-events: none;  /* won't block clicks */
+}
+
+/* Optional size/style (remove if not needed) */
+.center-behind--square {
+  width: clamp(300px, 32vw, 440px);
+  aspect-ratio: 1 / 1;
+  background: var(--color-primary, #00dc00);
+  box-shadow: 0 30px 140px -28px rgba(0, 220, 0, 0.6);
+}
+
+
+.landing-hero__button {
+  padding: 14px clamp(32px, 10vw, 60px);
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: transparent;
+  transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+              background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* enable underline animation */
+.landing-hero__button {
+  position: relative; /* anchor the pseudo-element */
+  overflow: visible;
+}
+
+/* the thin line */
+.landing-hero__button::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;                 /* distance under the button */
+  width: 64%;
+  height: 1px;                  /* thin line */
+  background: currentColor;     /* matches text/hover color */
+  opacity: 0.8;
+
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
   pointer-events: none;
 }
 
-.landing-hero__radial {
-  background: radial-gradient(70% 60% at 50% 12%, rgba(0, 0, 0, 0.05), transparent 65%);
+/* reveal on hover/focus */
+.landing-hero__button:hover::after,
+.landing-hero__button:focus-visible::after {
+  transform: translateX(-50%) scaleX(1);
+  opacity: 1;
 }
 
-.landing-hero__grid {
-  mask-image: radial-gradient(75% 75% at 50% 35%, rgba(0, 0, 0, 0.6), transparent 90%);
-  opacity: 0.06;
-  background-image:
-    linear-gradient(rgba(17, 17, 17, 0.35) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(17, 17, 17, 0.35) 1px, transparent 1px);
-  background-size: 48px 48px;
+/* optional: primary gets a green accent line */
+.landing-hero__button--primary::after {
+  background: var(--color-primary, #00dc00);
 }
 
-.landing-hero__arc {
-  inset: auto;
-  bottom: -45vh;
-  left: 50%;
-  width: 140vw;
-  height: 60vh;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: linear-gradient(180deg, rgba(248, 249, 251, 0.85), rgba(255, 255, 255, 0));
+/* motion-respectful */
+@media (prefers-reduced-motion: reduce) {
+  .landing-hero__button::after {
+    transition: none;
+  }
 }
+
+
 
 @media (max-width: 768px) {
-  .landing-hero {
-    padding-bottom: clamp(48px, 12vw, 80px);
-  }
+  .landing-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 200, 0, 0.14) 0, rgba(0, 200, 0, 0.14) 1px, transparent 1px, transparent 48px),
+    repeating-linear-gradient(0deg, rgba(0, 200, 0, 0.12) 0, rgba(0, 200, 0, 0.12) 1px, transparent 1px, transparent 48px);
+  mix-blend-mode: screen;
+  opacity: 0.18;
+  z-index: 0;
+}
 
-  .landing-hero__brand {
-    position: static;
-    align-self: flex-start;
-  }
-
-  .landing-hero__section {
-    gap: clamp(14px, 5vw, 20px);
+.landing-hero__content {
+    gap: clamp(60px, 12vw, 96px);
   }
 
   .landing-hero__button {
     width: 100%;
-    justify-content: center;
   }
 
-  .landing-hero__line-break {
-    display: inline;
+  .landing-hero__title {
+    font-size: clamp(2.4rem, 9vw, 3.6rem);
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .landing-hero__button {
     transition: none;
