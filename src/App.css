@@ -148,7 +148,6 @@ button {
 .side-nav {
   position: fixed;              /* keep this */
   left: 0;
-  top: 0;
   width: var(--sidebar-w);
   height: 100dvh;               /* better than 100vh on mobile */
   background: var(--bg-surface);
