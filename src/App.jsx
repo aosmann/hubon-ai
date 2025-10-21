@@ -862,14 +862,21 @@ export default function App() {
   }
 
   async function handleLogout() {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      if (supabase) {
+        const { error } = await supabase.auth.signOut();
+        if (error && !/auth session missing/i.test(error.message || '')) {
+          console.error('Failed to sign out', error);
+          setGlobalMessage('Sign out failed. Please try again.');
+          return;
+        }
+      }
+    } catch (error) {
       console.error('Failed to sign out', error);
-      setGlobalMessage('Sign out failed. Please try again.');
-    } else {
-      setGlobalMessage('Signed out.');
-      setShowAuthView(false);
     }
+    setUser(null);
+    setGlobalMessage('Signed out.');
+    setShowAuthView(false);
   }
 
   function normalizeFieldKey(value) {
