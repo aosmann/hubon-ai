@@ -10,11 +10,13 @@ export default function HeaderNav({
   onHome,
   onTemplates,
   onBrand,
+  onProfile,
   onToggleAdmin,
   onDarkModeChange,
   onLogout
 }) {
   const isAuthed = Boolean(user);
+  const email = user?.email ?? 'Signed in';
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -54,6 +56,18 @@ export default function HeaderNav({
     }
   }
 
+  function handleNavAction(callback) {
+    return () => {
+      setMenuOpen(false);
+      callback();
+    };
+  }
+
+  function handleLogout() {
+    setMenuOpen(false);
+    onLogout();
+  }
+
   return (
     <aside className="side-nav">
       <div className="branding">
@@ -65,7 +79,7 @@ export default function HeaderNav({
           <button
             type="button"
             className={activeView === 'home' ? 'action-btn active' : 'action-btn'}
-            onClick={onHome}
+            onClick={handleNavAction(onHome)}
             aria-label="Home"
           >
             <Home size={18} />
@@ -74,7 +88,7 @@ export default function HeaderNav({
           <button
             type="button"
             className={activeView === 'templates' ? 'action-btn active' : 'action-btn'}
-            onClick={onTemplates}
+            onClick={handleNavAction(onTemplates)}
             aria-label="Templates"
           >
             <LayoutTemplate size={18} />
@@ -83,14 +97,14 @@ export default function HeaderNav({
           <button
             type="button"
             className={activeView === 'brand' ? 'action-btn active' : 'action-btn'}
-            onClick={onBrand}
+            onClick={handleNavAction(onBrand)}
             aria-label="Brand style"
           >
             <Palette size={18} />
             <span>Brand Style</span>
           </button>
           {canEditTemplates && (
-            <div className="admin-toggle">
+            <div className="admin-toggle desktop-only">
               <span className="admin-toggle-label">
                 <Settings2 size={18} />
                 Admin
@@ -105,13 +119,22 @@ export default function HeaderNav({
               </label>
             </div>
           )}
+          <button
+            type="button"
+            className={`${activeView === 'profile' ? 'action-btn active' : 'action-btn'} mobile-only`}
+            onClick={handleNavAction(onProfile)}
+            aria-label="Profile"
+          >
+            <User2 size={18} />
+            <span>Profile</span>
+          </button>
         </nav>
       )}
 
       <div className="side-nav-grow" />
 
       {isAuthed ? (
-        <div className="user-menu" ref={menuRef}>
+        <div className="user-menu desktop-only" ref={menuRef}>
           <button
             type="button"
             className="user-menu-trigger"
@@ -120,7 +143,7 @@ export default function HeaderNav({
             aria-label={menuOpen ? 'Close account menu' : 'Open account menu'}
           >
             <User2 size={18} />
-            <span className="user-email">{user.email}</span>
+            <span className="user-email">{email}</span>
           </button>
           {menuOpen && (
             <div className="user-menu-pop">
@@ -145,7 +168,7 @@ export default function HeaderNav({
                   <span className="toggle-slider" aria-hidden="true" />
                 </label>
               </div>
-              <button type="button" onClick={() => { setMenuOpen(false); onLogout(); }}>
+              <button type="button" onClick={handleLogout}>
                 <LogOut size={16} />
                 <span>Sign out</span>
               </button>

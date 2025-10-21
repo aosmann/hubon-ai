@@ -309,9 +309,39 @@ export default function App() {
   const [generateError, setGenerateError] = useState('');
   const [globalMessage, setGlobalMessage] = useState('');
   const [configError, setConfigError] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const stored = window.localStorage.getItem('hubon-theme');
+      if (stored === 'dark') return true;
+      if (stored === 'light') return false;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch (err) {
+      console.warn('Unable to access stored theme preference', err);
+    }
+    return false;
+  });
   const lastFetchedUserRef = useRef(null);
   const dataLoadedRef = useRef(false);
   const fetchingRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    const theme = isDarkMode ? 'dark' : 'light';
+    root.dataset.theme = theme;
+    root.classList.toggle('theme-dark', isDarkMode);
+    root.classList.toggle('theme-light', !isDarkMode);
+    try {
+      window.localStorage?.setItem('hubon-theme', theme);
+    } catch (err) {
+      console.warn('Unable to persist theme preference', err);
+    }
+  }, [isDarkMode]);
+
+  const handleDarkModeChange = useCallback(checked => {
+    setIsDarkMode(Boolean(checked));
+  }, []);
 
   const selectedTemplate = useMemo(
     () => templates.find(template => template.id === selectedTemplateId) || null,
@@ -1270,10 +1300,12 @@ export default function App() {
           isAdminMode={isAdminMode}
           canEditTemplates={isAdmin && !profileLoading}
           user={user}
+          isDarkMode={isDarkMode}
           onHome={goHome}
           onTemplates={resetToTemplates}
           onBrand={showBrandView}
           onToggleAdmin={toggleAdminMode}
+          onDarkModeChange={handleDarkModeChange}
           onLogout={handleLogout}
         />
       )}
