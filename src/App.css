@@ -498,7 +498,7 @@ button {
     left: 0;
     right: 0;
     bottom: 0;
-    height: calc(72px + env(safe-area-inset-bottom));
+    height: calc(82px + env(safe-area-inset-bottom));
     flex-shrink: 0;
     margin: 0;
     padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
@@ -2065,7 +2065,7 @@ button.link-button:hover {
   .side-nav .action-btn {
     width: auto;
     justify-content: center;
-    padding: 0.5rem 1.5rem;
+    padding: 0.8rem 1.5rem;
 
   }
 
