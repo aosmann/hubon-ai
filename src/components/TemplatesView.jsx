@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pencil, Trash2, X, Upload, Image as ImageIcon } from 'lucide-react';
 
 export default function TemplatesView({
@@ -84,6 +84,26 @@ export default function TemplatesView({
     size: 18,
     strokeWidth: 1.9,
   };
+  const scrollLockRef = useRef(false);
+  const isModalActive = Boolean(modalTemplate && modalDraft);
+
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    if (isModalActive && !scrollLockRef.current) {
+      document.body.classList.add('modal-open');
+      scrollLockRef.current = true;
+    } else if (!isModalActive && scrollLockRef.current) {
+      document.body.classList.remove('modal-open');
+      scrollLockRef.current = false;
+    }
+    return () => {
+      if (scrollLockRef.current) {
+        document.body.classList.remove('modal-open');
+        scrollLockRef.current = false;
+      }
+    };
+  }, [isModalActive]);
 
   return (
     <>
@@ -154,11 +174,12 @@ export default function TemplatesView({
             <button type="button" className="modal-close" onClick={handleCloseModal} aria-label="Close">
               <X {...iconProps} />
             </button>
-            <div className="template-modal-grid">
-              <div className="template-modal-media">
+            <div className="template-modal-body">
+              <div className="template-modal-grid">
+                <div className="template-modal-media">
                 <img src={modalDraft.image} alt={`${modalDraft.name} preview`} />
               </div>
-              <div className="template-modal-details">
+                <div className="template-modal-details">
                 <header>
                   <h2>{modalDraft.name}</h2>
                   <p>{modalDraft.description}</p>
@@ -355,6 +376,7 @@ export default function TemplatesView({
             </div>
           </div>
         </div>
+      </div>
       )}
     </>
   );

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Download, ExternalLink, History, Copy, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Download, ExternalLink, History, Copy, Eye, EyeOff, AlertTriangle, X } from 'lucide-react';
 
 export default function HomeView({
   history,
@@ -15,6 +15,32 @@ export default function HomeView({
 
   const resolveImageSrc = entry => entry.previewUrl || entry.url || '';
   const activeEntry = activeEntryId ? history.find(entry => entry.id === activeEntryId) : null;
+  const scrollLockRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    if (activeEntry && !scrollLockRef.current) {
+      document.body.classList.add('modal-open');
+      scrollLockRef.current = true;
+    } else if (!activeEntry && scrollLockRef.current) {
+      document.body.classList.remove('modal-open');
+      scrollLockRef.current = false;
+    }
+    return () => {
+      if (scrollLockRef.current) {
+        document.body.classList.remove('modal-open');
+        scrollLockRef.current = false;
+      }
+    };
+  }, [activeEntry]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    document.body.classList.toggle('modal-open', Boolean(activeEntry));
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [activeEntry]);
 
   function handleOpenModal(entry) {
     setActiveEntryId(entry.id);
@@ -153,16 +179,17 @@ export default function HomeView({
           <div className="template-modal-backdrop" onClick={handleCloseModal} />
           <div className="template-modal-content history-modal">
             <button type="button" className="modal-close" onClick={handleCloseModal} aria-label="Close">
-              <span aria-hidden="true">×</span>
+              <X size={18} />
             </button>
-            <div className="template-modal-grid">
-              <div className="template-modal-media">
+            <div className="template-modal-body">
+              <div className="template-modal-grid">
+                <div className="template-modal-media">
                 <img
                   src={resolveImageSrc(activeEntry)}
                   alt={activeEntry.generationName || activeEntry.templateName || 'Generated render'}
                 />
               </div>
-              <div className="template-modal-details">
+                <div className="template-modal-details">
                 <header>
                   <h2>{activeEntry.generationName || activeEntry.templateName || 'Saved generation'}</h2>
                   {activeEntry.templateName ? (
@@ -227,6 +254,7 @@ export default function HomeView({
             </div>
           </div>
         </div>
+      </div>
       )}
     </>
   );

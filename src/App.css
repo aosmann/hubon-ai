@@ -41,7 +41,7 @@
   --bg-page: #000000;
   --bg-surface: #0f0f0f;
   --bg-surface-elevated: #121212;
-  --border-subtle: #1f1f1f;
+  --border-subtle: #303030;
   --border-strong: #2d2d2d;
   --color-primary: #34d399;
   --color-primary-soft: #22c55e;
@@ -79,6 +79,11 @@ body {
   color: var(--color-text);
   overflow-x: hidden;
 
+}
+
+body.modal-open {
+  overflow: hidden;
+  touch-action: none;
 }
 
 .home-index {
@@ -164,6 +169,22 @@ button {
   min-height: 100vh;
   width: 100%;
   display: flex;
+  --bg-page: #030915;
+  --bg-surface: #041120;
+  --bg-surface-elevated: #0a1b33;
+  --bg-panel: rgba(15, 25, 45, 0.8);
+  --bg-panel-strong: rgba(21, 33, 57, 0.9);
+  --bg-popover: rgba(6, 17, 33, 0.96);
+  --bg-popover-hover: rgba(29, 44, 70, 0.82);
+  --bg-control: rgba(46, 60, 90, 0.32);
+  --bg-control-hover: rgba(71, 87, 122, 0.42);
+  --border-subtle: rgba(56, 79, 120, 0.35);
+  --border-strong: rgba(90, 120, 168, 0.55);
+  --color-text: #f8fafc;
+  --color-muted: rgba(226, 232, 240, 0.7);
+  --color-primary: #34d399;
+  --color-primary-soft: #22c55e;
+  --color-primary-dark: #0f766e;
   background: var(--bg-surface);
   color: var(--color-text);
 }
@@ -533,7 +554,7 @@ button {
 .side-nav-links {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 1rem;
 }
 
 .side-nav-links span {
@@ -980,6 +1001,10 @@ button.danger:hover {
 }
 
 @media (max-width: 640px) {
+  .template-modal-body {
+    gap: 24px;
+    padding-right: 0;
+  }
   .app-banner {
     left: 12px;          /* full-width on small screens */
     right: 12px;
@@ -1261,7 +1286,7 @@ button.danger:hover {
 .template-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: #3f3f3f29;
+  background: rgba(52, 52, 52, 0.35);
   backdrop-filter: blur(2px);
   pointer-events: auto;
   animation: backdropFadeIn 0.25s ease-out;
@@ -1279,7 +1304,7 @@ button.danger:hover {
 }
 
 .template-modal-content {
-  border: 1px solid var(--color-muted);
+  border: 1px solid var(--border-subtle);
   position: relative;
   width: min(880px, calc(100vw - 40px));
   max-height: calc(100vh - 80px);
@@ -1290,9 +1315,18 @@ button.danger:hover {
   flex-direction: column;
   gap: 32px;
   padding: 32px;
-  overflow: auto;
+  overflow: hidden;
   pointer-events: auto;
   animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.template-modal-body {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  gap: 32px;
+  padding-right: 6px;
+  flex: 1 1 auto;
 }
 
 @keyframes modalSlideIn {
@@ -1405,7 +1439,7 @@ button.danger:hover {
   height: 46px;
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.254);
+  background: var(--bg-panel);
   color: var(--color-muted);
   cursor: pointer;
 
@@ -1422,7 +1456,7 @@ button.danger:hover {
 }
 
 .modal-close:hover {
-  background: rgba(15, 23, 42, 0.08);
+  background: var(--bg-panel-strong);
   color: var(--color-text);
 }
 
@@ -1431,7 +1465,7 @@ button.danger:hover {
   width: 22px;
   height: 22px;
   display: block;
-  stroke: white;
+  stroke: currentColor;
 }
 
 
@@ -1479,7 +1513,7 @@ button.danger:hover {
 
   .template-modal-content {
     width: calc(100vw - 16px);
-    max-height: calc(100vh - 24px);
+    max-height: calc(95vh - 24px);
     border-radius: 22px 22px 0 0;
     padding: 20px;
   }
@@ -1951,7 +1985,7 @@ button.link-button:hover {
   color: var(--color-text);
   line-height: 1.55;
   max-height: 340px;
-  overflow: auto;
+  overflow: hidden;
   white-space: pre-wrap;
 }
 
@@ -2009,7 +2043,7 @@ button.link-button:hover {
   .side-nav .action-btn {
     width: auto;
     justify-content: center;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1.5rem;
 
   }
 
