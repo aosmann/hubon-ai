@@ -7,6 +7,7 @@ import BrandView from './components/BrandView.jsx';
 import GenerateView from './components/GenerateView.jsx';
 import AuthView from './components/AuthView.jsx';
 import LandingPage from './components/LandingPage.jsx';
+import ProfileView from './components/ProfileView.jsx';
 import ChatBot from './components/ChatBot.jsx';
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 import './App.css';
@@ -654,6 +655,12 @@ export default function App() {
     setLoading(false);
   }
 
+  function showProfileView() {
+    setActiveView('profile');
+    setExpandedTemplateEditor(null);
+    setEditingTemplates({});
+  }
+
   function toggleAdminMode() {
     if (!isAdmin) return;
     setIsAdminMode(prev => !prev);
@@ -1253,6 +1260,19 @@ export default function App() {
         error={brandError}
       />
     );
+  } else if (activeView === 'profile') {
+    viewClassName = 'profile-view';
+    viewContent = (
+      <ProfileView
+        user={user}
+        canEditTemplates={isAdmin && !profileLoading}
+        isAdminMode={isAdminMode}
+        isDarkMode={isDarkMode}
+        onToggleAdmin={toggleAdminMode}
+        onDarkModeChange={handleDarkModeChange}
+        onLogout={handleLogout}
+      />
+    );
   } else if (activeView === 'generate' && selectedTemplate) {
     viewClassName = 'generate-view';
     viewContent = (
@@ -1300,14 +1320,15 @@ export default function App() {
           isAdminMode={isAdminMode}
           canEditTemplates={isAdmin && !profileLoading}
           user={user}
-          isDarkMode={isDarkMode}
-          onHome={goHome}
-          onTemplates={resetToTemplates}
-          onBrand={showBrandView}
-          onToggleAdmin={toggleAdminMode}
-          onDarkModeChange={handleDarkModeChange}
-          onLogout={handleLogout}
-        />
+        isDarkMode={isDarkMode}
+        onHome={goHome}
+        onTemplates={resetToTemplates}
+        onBrand={showBrandView}
+        onProfile={showProfileView}
+        onToggleAdmin={toggleAdminMode}
+        onDarkModeChange={handleDarkModeChange}
+        onLogout={handleLogout}
+      />
       )}
       <div className="app-content">
         {globalMessage && <div className="app-banner success">{globalMessage}</div>}
