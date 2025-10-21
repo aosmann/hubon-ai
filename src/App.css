@@ -2619,3 +2619,8 @@ button.link-button:hover {
 .image-upload-overlay span {
   font-size: 0.9rem;
 }
+
+.theme-dark body {
+  background: var(--bg-page);
+  color: var(--color-text);
+}
